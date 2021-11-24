@@ -38,7 +38,7 @@ impl<'a> AsmParser<'a> {
         let addr_mode = match self.lexer.next_token() {
             AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => {
                 return Some(AddrMode::Implied)
-            },
+            }
             AsmToken::ImmediateModifier => {
                 let imm = self.parse_integer_literal()?;
                 if imm >= 256 {
@@ -47,12 +47,13 @@ impl<'a> AsmParser<'a> {
                 } else {
                     Some(AddrMode::Immediate(imm as u8))
                 }
-            },
+            }
             _ => {
                 panic!("unexpected token");
             }
         };
-        self.lexer.expect_one_of(vec![AsmToken::Semicolon, AsmToken::Newline]);
+        self.lexer
+            .expect_one_of(vec![AsmToken::Semicolon, AsmToken::Newline]);
         addr_mode
     }
 
