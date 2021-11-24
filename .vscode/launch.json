@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rehill'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=rehill",
+                    "--package=rehill"
+                ],
+                "filter": {
+                    "name": "rehill",
+                    "kind": "bin"
+                }
+            },
+            "args": [ "test.S" ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'rehill'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=rehill",
+                    "--package=rehill"
+                ],
+                "filter": {
+                    "name": "rehill",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
