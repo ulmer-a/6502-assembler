@@ -1,3 +1,8 @@
+use std::str::FromStr;
+
+use strum::EnumString;
+
+#[derive(EnumString)]
 pub enum Mnemonic {
     ADC, // add with carry
     AND, // and with A register
@@ -73,8 +78,6 @@ pub enum Mnemonic {
 pub enum AddrMode {
     Implied,
     Immediate(u8),
-    MemoryIndexedX,
-    MemoryIndexedY,
 }
 
 pub enum MemoryReference {
@@ -83,4 +86,16 @@ pub enum MemoryReference {
     Absolute(u16),
 }
 
-pub struct Instruction {}
+pub struct Instruction {
+    mnemonic: Mnemonic,
+    addr_mode: AddrMode,
+}
+
+impl Instruction {
+    pub fn new(mnemonic: String, addr_mode: AddrMode) -> Instruction {
+        Instruction {
+            mnemonic: Mnemonic::from_str(&mnemonic.to_uppercase()).unwrap(),
+            addr_mode: addr_mode,
+        }
+    }
+}

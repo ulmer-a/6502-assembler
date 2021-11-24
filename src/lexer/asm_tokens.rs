@@ -2,12 +2,6 @@ use logos::Logos;
 
 #[derive(Logos, Clone, Debug, PartialEq)]
 pub enum AsmToken {
-    #[token("brk")]
-    #[token("jsr")]
-    #[token("rts")]
-    #[token("rti")]
-    Mnemonic,
-
     #[token("(")]
     ParensOpen,
     #[token(")")]
@@ -24,9 +18,8 @@ pub enum AsmToken {
     #[regex(r"[1-9][0-9]*")]
     DecInteger,
 
-    // Or regular expressions.
-    #[regex("[a-zA-Z]+")]
-    Text,
+    #[regex(r"[_a-zA-Z][_a-zA-Z0-9]+")]
+    Identifier,
 
     #[token("\n")]
     Newline,
