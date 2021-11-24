@@ -18,6 +18,20 @@ impl<'a> AsmLexer<'a> {
         }
     }
 
+    pub fn slice(&self) -> &str {
+        self.lexer.slice()
+    }
+
+    pub fn expect_one_of(&mut self, tokens: Vec<AsmToken>) {
+        let token = self.lexer.next();
+        if let Some(token) = token {
+            if tokens.contains(&token) {
+                return;
+            }
+        }
+        panic!("unexpected token");
+    }
+
     pub fn next_token(&mut self) -> AsmToken {
         let token = match self.lexer.next() {
             Some(token) => token,
