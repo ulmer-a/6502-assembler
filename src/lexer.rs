@@ -7,23 +7,29 @@ mod asm_lexer_tests;
 
 pub struct AsmLexer<'a> {
     lexer: logos::Lexer<'a, AsmToken>,
-    last_token: AsmToken,
+    current_token: AsmToken,
+    line: u32,
 }
 
 impl<'a> AsmLexer<'a> {
     pub fn new(source: &'a str) -> AsmLexer {
         AsmLexer {
             lexer: AsmToken::lexer(source),
-            last_token: AsmToken::Error,
+            current_token: AsmToken::Error,
+            line: 1
         }
+    }
+
+    pub fn line(&self) -> u32 {
+        self.line
     }
 
     pub fn slice(&self) -> &str {
         self.lexer.slice()
     }
 
-    pub fn last_token(&self) -> AsmToken {
-        self.last_token.clone()
+    pub fn current_token(&self) -> AsmToken {
+        self.current_token.clone()
     }
 
     pub fn expect_one_of(&mut self, tokens: Vec<AsmToken>) {
@@ -41,7 +47,10 @@ impl<'a> AsmLexer<'a> {
             Some(token) => token,
             None => AsmToken::Error,
         };
-        self.last_token = token.clone();
+        if self.current_token == AsmToken::Newline {
+            self.line += 1;
+        }
+        self.current_token = token.clone();
         token
     }
 }

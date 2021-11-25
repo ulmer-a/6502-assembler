@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr};
 use strum::EnumString;
 
 #[derive(EnumString)]
@@ -85,8 +85,17 @@ pub enum AddrMode {
     IndirectIndexedY(MemoryReference),
 }
 
-impl AddrMode {}
+impl AddrMode {
+    pub fn indirect(&self) -> Option<AddrMode> {
+        match self {
+            AddrMode::Direct(m) => Some(AddrMode::Indirect(m.clone())),
+            AddrMode::DirectIndexedY(m) => Some(AddrMode::IndirectIndexedY(m.clone())),
+            _ => None
+        }
+    }
+}
 
+#[derive(Clone)]
 pub enum MemoryReference {
     Variable(String),
     Zeropage(u8),
