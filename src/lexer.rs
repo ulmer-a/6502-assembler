@@ -22,6 +22,10 @@ impl<'a> AsmLexer<'a> {
         self.lexer.slice()
     }
 
+    pub fn last_token(&self) -> AsmToken {
+        self.last_token.clone()
+    }
+
     pub fn expect_one_of(&mut self, tokens: Vec<AsmToken>) {
         let token = self.lexer.next();
         if let Some(token) = token {

@@ -1,5 +1,4 @@
 use std::str::FromStr;
-
 use strum::EnumString;
 
 #[derive(EnumString)]
@@ -78,7 +77,15 @@ pub enum Mnemonic {
 pub enum AddrMode {
     Implied,
     Immediate(u8),
+    Direct(MemoryReference),
+    DirectIndexedX(MemoryReference),
+    DirectIndexedY(MemoryReference),
+    Indirect(MemoryReference),
+    IndexedIndirectX(MemoryReference),
+    IndirectIndexedY(MemoryReference),
 }
+
+impl AddrMode {}
 
 pub enum MemoryReference {
     Variable(String),
