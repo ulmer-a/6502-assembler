@@ -2,8 +2,7 @@ use super::{super::model::*, AsmParseError, AsmParser, AsmToken};
 use crate::asm::model::Instruction;
 
 impl<'a> AsmParser<'a> {
-    pub fn parse_instruction(&mut self) {
-        let mnemonic: String = self.lexer.slice().into();
+    pub fn parse_instruction(&mut self, mnemonic: String) {
         if let Some(addr_mode) = self.parse_addr_mode() {
             self.instructions
                 .push(Instruction::new(mnemonic, addr_mode));
@@ -12,7 +11,7 @@ impl<'a> AsmParser<'a> {
 
     fn parse_addr_mode(&mut self) -> Option<AddrMode> {
         self.parse_until(vec![AsmToken::Newline, AsmToken::Semicolon], |p| {
-            match p.lexer.next_token() {
+            match p.lexer.current_token() {
                 AsmToken::End | AsmToken::Semicolon | AsmToken::Newline => Some(AddrMode::Implied),
                 AsmToken::ImmediateModifier => p.parse_immediate(),
                 _ => p.parse_mem_addr_mode(),
@@ -37,7 +36,7 @@ impl<'a> AsmParser<'a> {
 
     fn parse_indexed_mem_ref(&mut self) -> Option<AddrMode> {
         let mem_ref = self.parse_mem_ref()?;
-        if self.lexer.next_token() == AsmToken::Colon {
+        if self.lexer.next_token() == AsmToken::Comma {
             let id_token = self.lexer.next_token();
             if let AsmToken::Identifier = id_token {
                 self.parse_index_mode(mem_ref)

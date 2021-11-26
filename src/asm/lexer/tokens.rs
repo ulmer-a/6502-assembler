@@ -5,17 +5,28 @@ use std::fmt;
 pub enum AsmToken {
     #[token("(")]
     ParensOpen,
+
     #[token(")")]
     ParensClose,
+
     #[token(",")]
+    Comma,
+
+    #[token(":")]
     Colon,
+
     #[token(";")]
     Semicolon,
+
     #[token("#")]
     ImmediateModifier,
 
+    #[token("=")]
+    AssignmentOperator,
+
     #[regex(r"(\$|0x)[0-9A_Fa-f]+")]
     HexInteger,
+
     #[regex(r"[1-9][0-9]*")]
     DecInteger,
 

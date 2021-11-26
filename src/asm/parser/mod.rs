@@ -42,14 +42,26 @@ impl<'a> AsmParser<'a> {
             .push(CompileError::new(error_type, self.lexer.line()));
     }
 
+    fn insert_label(&mut self, name: String) {
+        println!("generate label: {}", name);
+    }
+
     pub fn parse(&mut self) {
         loop {
-            let token = self.lexer.next_token();
-            match token {
-                AsmToken::Identifier => self.parse_instruction(),
+            match self.lexer.next_token() {
+                AsmToken::Identifier => {
+                    // lines or expressions starting with an identifier could be
+                    // either instructions, labels or label assignments, so some
+                    // lookahead has to be performed.
+                    let identifier: String = self.lexer.slice().into();
+                    match self.lexer.next_token() {
+                        AsmToken::Colon => self.insert_label(identifier),
+                        _ => self.parse_instruction(identifier),
+                    }
+                }
                 AsmToken::End => return,
-                AsmToken::Newline => {},
-                _ => {
+                AsmToken::Newline | AsmToken::Semicolon => {}
+                token => {
                     self.error(AsmParseError::UnexpectedToken(token));
                 }
             }
