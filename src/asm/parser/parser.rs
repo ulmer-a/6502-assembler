@@ -1,21 +1,10 @@
-use super::{super::model::*, AsmLexer, AsmToken};
-
-pub enum ErrorType {
-    UnexpectedToken(AsmToken),
-    ImmediateTooLarge,
-    InvalidIndexRegister,
-    AddressTooLarge,
-}
-
-pub struct CompileError {
-    error_type: ErrorType,
-    line: u32,
-}
+use super::{super::model::*, AsmLexer, AsmParseError, AsmToken};
+use crate::errors::CompileError;
 
 pub struct AsmParser<'a> {
     lexer: AsmLexer<'a>,
     instructions: Vec<Instruction>,
-    errors: Vec<CompileError>,
+    errors: Vec<CompileError<AsmParseError>>,
 }
 
 impl<'a> AsmParser<'a> {
@@ -27,11 +16,15 @@ impl<'a> AsmParser<'a> {
         }
     }
 
-    fn error(&mut self, error_type: ErrorType) {
-        self.errors.push(CompileError {
-            error_type,
-            line: self.lexer.line(),
-        });
+    pub fn dump_errors(&self) {
+        for error in self.errors.iter() {
+            error.print();
+        }
+    }
+
+    fn error(&mut self, error_type: AsmParseError) {
+        self.errors
+            .push(CompileError::new(error_type, self.lexer.line()));
     }
 
     pub fn parse(&mut self) {
@@ -41,7 +34,7 @@ impl<'a> AsmParser<'a> {
                 AsmToken::Identifier => self.parse_instruction(),
                 AsmToken::Error => return,
                 _ => {
-                    self.error(ErrorType::UnexpectedToken(token));
+                    self.error(AsmParseError::UnexpectedToken(token));
                 }
             }
         }
@@ -64,9 +57,10 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_immediate(&mut self) -> Option<AddrMode> {
-        let value = self.parse_integer_literal()?;
+        self.lexer.next_token();
+        let value = self.lexer.numeric_value()?;
         if value >= 256 {
-            self.error(ErrorType::ImmediateTooLarge);
+            self.error(AsmParseError::ImmediateTooLarge);
             None
         } else {
             Some(AddrMode::Immediate(value as u8))
@@ -84,7 +78,7 @@ impl<'a> AsmParser<'a> {
             if let AsmToken::Identifier = id_token {
                 self.parse_index_mode(mem_ref)
             } else {
-                self.error(ErrorType::UnexpectedToken(id_token));
+                self.error(AsmParseError::UnexpectedToken(id_token));
                 None
             }
         } else {
@@ -93,7 +87,7 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_mem_ref(&mut self) -> Option<MemoryReference> {
-        let token = self.lexer.current_token();
+        let token = self.lexer.next_token();
         match token {
             AsmToken::DecInteger | AsmToken::HexInteger => {
                 let addr = self.parse_integer_literal()?;
@@ -102,7 +96,7 @@ impl<'a> AsmParser<'a> {
                 } else if addr < 0x10000 {
                     Some(MemoryReference::Absolute(addr as u16))
                 } else {
-                    self.error(ErrorType::AddressTooLarge);
+                    self.error(AsmParseError::AddressTooLarge);
                     None
                 }
             }
@@ -110,7 +104,7 @@ impl<'a> AsmParser<'a> {
                 Some(MemoryReference::Variable(String::from(self.lexer.slice())))
             }
             _ => {
-                self.error(ErrorType::UnexpectedToken(token));
+                self.error(AsmParseError::UnexpectedToken(token));
                 None
             }
         }
@@ -122,7 +116,7 @@ impl<'a> AsmParser<'a> {
             "x" => Some(AddrMode::DirectIndexedX(mem_ref)),
             "y" => Some(AddrMode::DirectIndexedY(mem_ref)),
             _ => {
-                self.error(ErrorType::InvalidIndexRegister);
+                self.error(AsmParseError::InvalidIndexRegister);
                 None
             }
         }

@@ -1,5 +1,6 @@
 use std::{env, fs};
 mod asm;
+mod errors;
 use asm::AsmParser;
 
 fn main() {
@@ -8,4 +9,6 @@ fn main() {
 
     let mut parser = AsmParser::new(&source);
     parser.parse();
+
+    parser.dump_errors();
 }
