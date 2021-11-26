@@ -40,6 +40,16 @@ impl<'a> AsmParser<'a> {
         }
     }
 
+    fn parse_until<T, F: Fn(&mut Self) -> T>(&mut self, end_tokens: Vec<AsmToken>, func: F) -> T {
+        let result = func(self);
+        while !end_tokens.contains(&self.lexer.current_token())
+            && self.lexer.current_token() != AsmToken::Error
+        {
+            self.lexer.next_token();
+        }
+        result
+    }
+
     fn parse_instruction(&mut self) {
         let mnemonic: String = self.lexer.slice().into();
         if let Some(addr_mode) = self.parse_addr_mode() {
@@ -49,11 +59,15 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_addr_mode(&mut self) -> Option<AddrMode> {
-        match self.lexer.next_token() {
-            AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => Some(AddrMode::Implied),
-            AsmToken::ImmediateModifier => self.parse_immediate(),
-            _ => self.parse_mem_addr_mode(),
-        }
+        self.parse_until(vec![AsmToken::Newline, AsmToken::Semicolon], |p| {
+            match p.lexer.next_token() {
+                AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => {
+                    Some(AddrMode::Implied)
+                }
+                AsmToken::ImmediateModifier => p.parse_immediate(),
+                _ => p.parse_mem_addr_mode(),
+            }
+        })
     }
 
     fn parse_immediate(&mut self) -> Option<AddrMode> {
@@ -87,7 +101,7 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_mem_ref(&mut self) -> Option<MemoryReference> {
-        let token = self.lexer.next_token();
+        let token = self.lexer.current_token();
         match token {
             AsmToken::DecInteger | AsmToken::HexInteger => {
                 let addr = self.parse_integer_literal()?;
