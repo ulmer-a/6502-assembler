@@ -1,63 +1,8 @@
-use super::{super::model::*, AsmLexer, AsmParseError, AsmToken};
-use crate::errors::CompileError;
-
-pub struct AsmParser<'a> {
-    lexer: AsmLexer<'a>,
-    instructions: Vec<Instruction>,
-    errors: Vec<CompileError<AsmParseError>>,
-}
+use super::{super::model::*, AsmParseError, AsmParser, AsmToken};
+use crate::asm::model::Instruction;
 
 impl<'a> AsmParser<'a> {
-    pub fn new(source: &str) -> AsmParser {
-        AsmParser {
-            lexer: AsmLexer::new(source),
-            instructions: vec![],
-            errors: vec![],
-        }
-    }
-
-    pub fn dump_errors(&self) {
-        for error in self.errors.iter() {
-            error.print();
-        }
-    }
-
-    fn error(&mut self, error_type: AsmParseError) {
-        self.errors
-            .push(CompileError::new(error_type, self.lexer.line()));
-    }
-
-    pub fn parse(&mut self) {
-        loop {
-            let token = self.lexer.next_token();
-            match token {
-                AsmToken::Identifier => self.parse_instruction(),
-                AsmToken::End => return,
-                _ => {
-                    self.error(AsmParseError::UnexpectedToken(token));
-                }
-            }
-        }
-    }
-
-    fn parse_until<T, F: Fn(&mut Self) -> T>(&mut self, end_tokens: Vec<AsmToken>, func: F) -> T {
-        let result = func(self);
-
-        let until_condition = |t: &&AsmToken| !end_tokens.contains(t) && t != &&AsmToken::End;
-        let mut unexpected_tokens: Vec<AsmToken> = vec![];
-        while until_condition(&&self.lexer.current_token()) {
-            unexpected_tokens.push(self.lexer.next_token());
-        }
-
-        let excess_tokens = unexpected_tokens.iter().filter(until_condition).count();
-        if excess_tokens > 0 {
-            self.error(AsmParseError::ExcessTokens(excess_tokens));
-        }
-
-        result
-    }
-
-    fn parse_instruction(&mut self) {
+    pub fn parse_instruction(&mut self) {
         let mnemonic: String = self.lexer.slice().into();
         if let Some(addr_mode) = self.parse_addr_mode() {
             self.instructions
