@@ -7,6 +7,17 @@ pub enum AsmStmt {
     Label(String),
 }
 
+impl AsmStmt {
+    #[cfg(test)]
+    pub fn new_instr(mnemonic: String, addr_mode: AddrMode) -> AsmStmt {
+        AsmStmt::AsmInstruction(Instruction::new(mnemonic, addr_mode))
+    }
+    #[cfg(test)]
+    pub fn new_label(name: String) -> AsmStmt {
+        AsmStmt::Label(name)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Instruction {
     mnemonic: Mnemonic,
@@ -85,6 +96,8 @@ pub enum Mnemonic {
     TXS, // transfer X -> SP
     TYA, // transfer Y -> A
     WAI, // wait for interrupt
+
+    Invalid,
 }
 
 #[derive(Debug, PartialEq)]
@@ -106,7 +119,10 @@ pub enum MemoryReference {
 impl Instruction {
     pub fn new(mnemonic: String, addr_mode: AddrMode) -> Instruction {
         Instruction {
-            mnemonic: Mnemonic::from_str(&mnemonic.to_uppercase()).unwrap(),
+            mnemonic: match Mnemonic::from_str(&mnemonic.to_uppercase()) {
+                Ok(m) => m,
+                Err(_) => Mnemonic::Invalid,
+            },
             addr_mode: addr_mode,
         }
     }

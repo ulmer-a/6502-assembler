@@ -1,6 +1,8 @@
 mod errors;
-mod instruction_parse_tests;
 mod instruction_parser;
+
+#[cfg(test)]
+mod tests;
 
 use super::{
     lexer::{AsmLexer, AsmToken},
