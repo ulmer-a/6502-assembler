@@ -1,10 +1,11 @@
-use super::asm_model::{AddrMode, Instruction, MemoryReference};
-use super::lexer::{AsmLexer, AsmToken};
+use super::{
+    AsmLexer, AsmToken,
+    super::model::*,
+};
 
 pub enum ErrorType {
     UnexpectedToken(AsmToken),
     ImmediateTooLarge,
-    InvalidIndirectAddrMode,
     InvalidIndexRegister,
     AddressTooLarge,
 }
@@ -78,17 +79,7 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_mem_addr_mode(&mut self) -> Option<AddrMode> {
-        let token = self.lexer.current_token();
-        let mem_ref_mode = self.parse_indexed_mem_ref()?;
-        if let AsmToken::ParensOpen = token {
-            let ind_addr_mode = mem_ref_mode.indirect();
-            if ind_addr_mode.is_none() {
-                self.error(ErrorType::InvalidIndirectAddrMode);
-            }
-            ind_addr_mode
-        } else {
-            Some(mem_ref_mode)
-        }
+        self.parse_indexed_mem_ref()
     }
 
     fn parse_indexed_mem_ref(&mut self) -> Option<AddrMode> {

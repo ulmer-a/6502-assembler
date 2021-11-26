@@ -1,8 +1,6 @@
 use std::{env, fs};
-mod asm_model;
-mod asm_parser;
-mod lexer;
-use asm_parser::AsmParser;
+mod asm;
+use asm::AsmParser;
 
 fn main() {
     let filename = env::args().skip(1).next().unwrap();

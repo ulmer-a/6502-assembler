@@ -74,25 +74,13 @@ pub enum Mnemonic {
     TYA, // transfer Y -> A
     WAI, // wait for interrupt
 }
+
 pub enum AddrMode {
     Implied,
     Immediate(u8),
     Direct(MemoryReference),
     DirectIndexedX(MemoryReference),
     DirectIndexedY(MemoryReference),
-    Indirect(MemoryReference),
-    IndexedIndirectX(MemoryReference),
-    IndirectIndexedY(MemoryReference),
-}
-
-impl AddrMode {
-    pub fn indirect(&self) -> Option<AddrMode> {
-        match self {
-            AddrMode::Direct(m) => Some(AddrMode::Indirect(m.clone())),
-            AddrMode::DirectIndexedY(m) => Some(AddrMode::IndirectIndexedY(m.clone())),
-            _ => None
-        }
-    }
 }
 
 #[derive(Clone)]

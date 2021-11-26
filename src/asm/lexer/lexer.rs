@@ -1,9 +1,5 @@
 use logos::Logos;
-
-pub mod asm_tokens;
-pub use asm_tokens::AsmToken;
-
-mod asm_lexer_tests;
+use super::AsmToken;
 
 pub struct AsmLexer<'a> {
     lexer: logos::Lexer<'a, AsmToken>,
@@ -18,6 +14,11 @@ impl<'a> AsmLexer<'a> {
             current_token: AsmToken::Error,
             line: 1
         }
+    }
+
+    #[cfg(test)]
+    pub fn lexer(&mut self) -> &mut logos::Lexer<'a, AsmToken> {
+        &mut self.lexer
     }
 
     pub fn line(&self) -> u32 {
