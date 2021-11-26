@@ -57,7 +57,7 @@ impl<'a> AsmLexer<'a> {
     pub fn next_token(&mut self) -> AsmToken {
         let token = match self.lexer.next() {
             Some(token) => token,
-            None => AsmToken::Error,
+            None => AsmToken::End,
         };
         if self.current_token == AsmToken::Newline {
             self.line += 1;

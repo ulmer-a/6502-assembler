@@ -1,4 +1,5 @@
 use logos::Logos;
+use std::fmt;
 
 #[derive(Logos, Clone, Debug, PartialEq)]
 pub enum AsmToken {
@@ -18,7 +19,7 @@ pub enum AsmToken {
     #[regex(r"[1-9][0-9]*")]
     DecInteger,
 
-    #[regex(r"[_a-zA-Z][_a-zA-Z0-9]+")]
+    #[regex(r"[_a-zA-Z][_a-zA-Z0-9]*")]
     Identifier,
 
     #[token("\n")]
@@ -31,4 +32,12 @@ pub enum AsmToken {
     // or any other matches we wish to skip.
     #[regex(r"[ \t\f]+", logos::skip)]
     Error,
+
+    End,
+}
+
+impl fmt::Display for AsmToken {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }

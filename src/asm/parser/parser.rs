@@ -32,7 +32,7 @@ impl<'a> AsmParser<'a> {
             let token = self.lexer.next_token();
             match token {
                 AsmToken::Identifier => self.parse_instruction(),
-                AsmToken::Error => return,
+                AsmToken::End => return,
                 _ => {
                     self.error(AsmParseError::UnexpectedToken(token));
                 }
@@ -43,7 +43,7 @@ impl<'a> AsmParser<'a> {
     fn parse_until<T, F: Fn(&mut Self) -> T>(&mut self, end_tokens: Vec<AsmToken>, func: F) -> T {
         let result = func(self);
         while !end_tokens.contains(&self.lexer.current_token())
-            && self.lexer.current_token() != AsmToken::Error
+            && self.lexer.current_token() != AsmToken::End
         {
             self.lexer.next_token();
         }
@@ -61,9 +61,7 @@ impl<'a> AsmParser<'a> {
     fn parse_addr_mode(&mut self) -> Option<AddrMode> {
         self.parse_until(vec![AsmToken::Newline, AsmToken::Semicolon], |p| {
             match p.lexer.next_token() {
-                AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => {
-                    Some(AddrMode::Implied)
-                }
+                AsmToken::End | AsmToken::Semicolon | AsmToken::Newline => Some(AddrMode::Implied),
                 AsmToken::ImmediateModifier => p.parse_immediate(),
                 _ => p.parse_mem_addr_mode(),
             }
@@ -130,7 +128,7 @@ impl<'a> AsmParser<'a> {
             "x" => Some(AddrMode::DirectIndexedX(mem_ref)),
             "y" => Some(AddrMode::DirectIndexedY(mem_ref)),
             _ => {
-                self.error(AsmParseError::InvalidIndexRegister);
+                self.error(AsmParseError::InvalidIndexRegister(id_text));
                 None
             }
         }
