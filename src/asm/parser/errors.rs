@@ -6,6 +6,7 @@ pub enum AsmParseError {
     ImmediateTooLarge,
     AddressTooLarge,
     InvalidIndexRegister(String),
+    ExcessTokens(usize),
 }
 
 impl ErrorMessage for AsmParseError {
@@ -23,6 +24,7 @@ impl ErrorMessage for AsmParseError {
             AsmParseError::InvalidIndexRegister(s) => {
                 format!("unknown index register '{}', use X or Y", s)
             }
+            AsmParseError::ExcessTokens(c) => format!("{} excess tokens after construct", c),
         }
     }
 }

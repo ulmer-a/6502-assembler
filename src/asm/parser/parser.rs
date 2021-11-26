@@ -42,11 +42,18 @@ impl<'a> AsmParser<'a> {
 
     fn parse_until<T, F: Fn(&mut Self) -> T>(&mut self, end_tokens: Vec<AsmToken>, func: F) -> T {
         let result = func(self);
-        while !end_tokens.contains(&self.lexer.current_token())
-            && self.lexer.current_token() != AsmToken::End
-        {
-            self.lexer.next_token();
+
+        let until_condition = |t: &&AsmToken| !end_tokens.contains(t) && t != &&AsmToken::End;
+        let mut unexpected_tokens: Vec<AsmToken> = vec![];
+        while until_condition(&&self.lexer.current_token()) {
+            unexpected_tokens.push(self.lexer.next_token());
         }
+
+        let excess_tokens = unexpected_tokens.iter().filter(until_condition).count();
+        if excess_tokens > 0 {
+            self.error(AsmParseError::ExcessTokens(excess_tokens));
+        }
+
         result
     }
 
