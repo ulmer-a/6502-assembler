@@ -1,6 +1,18 @@
 use std::str::FromStr;
 use strum::EnumString;
 
+#[derive(Debug, PartialEq)]
+pub enum AsmStmt {
+    AsmInstruction(Instruction),
+    Label(String),
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Instruction {
+    mnemonic: Mnemonic,
+    addr_mode: AddrMode,
+}
+
 #[derive(EnumString, Debug, PartialEq)]
 pub enum Mnemonic {
     ADC, // add with carry
@@ -89,12 +101,6 @@ pub enum MemoryReference {
     Variable(String),
     Zeropage(u8),
     Absolute(u16),
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Instruction {
-    mnemonic: Mnemonic,
-    addr_mode: AddrMode,
 }
 
 impl Instruction {

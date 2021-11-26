@@ -2,13 +2,16 @@ mod errors;
 mod instruction_parse_tests;
 mod instruction_parser;
 
-use super::lexer::{AsmLexer, AsmToken};
-use crate::{asm::model::Instruction, errors::CompileError};
+use super::{
+    lexer::{AsmLexer, AsmToken},
+    model::AsmStmt,
+};
+use crate::errors::CompileError;
 use errors::AsmParseError;
 
 pub struct AsmParser<'a> {
     lexer: AsmLexer<'a>,
-    instructions: Vec<Instruction>,
+    statements: Vec<AsmStmt>,
     errors: Vec<CompileError<AsmParseError>>,
 }
 
@@ -16,14 +19,14 @@ impl<'a> AsmParser<'a> {
     pub fn new(source: &str) -> AsmParser {
         AsmParser {
             lexer: AsmLexer::new(source),
-            instructions: vec![],
+            statements: vec![],
             errors: vec![],
         }
     }
 
     #[cfg(test)]
-    pub fn instructions(&self) -> &Vec<Instruction> {
-        &self.instructions
+    pub fn statements(&self) -> &Vec<AsmStmt> {
+        &self.statements
     }
 
     #[cfg(test)]
@@ -43,7 +46,7 @@ impl<'a> AsmParser<'a> {
     }
 
     fn insert_label(&mut self, name: String) {
-        println!("generate label: {}", name);
+        self.statements.push(AsmStmt::Label(name));
     }
 
     pub fn parse(&mut self) {

@@ -18,16 +18,16 @@ mod instruction_parse_tests {
 
         assert_eq!(parser.errors().len(), 0);
         assert_eq!(
-            *parser.instructions(),
+            *parser.statements(),
             vec![
-                Instruction::new("brk".into(), AddrMode::Implied),
-                Instruction::new("inc".into(), AddrMode::Implied),
-                Instruction::new("inx".into(), AddrMode::Implied),
-                Instruction::new("dec".into(), AddrMode::Implied),
-                Instruction::new("rts".into(), AddrMode::Implied),
-                Instruction::new("lda".into(), AddrMode::Immediate(32)),
-                Instruction::new("cmp".into(), AddrMode::Immediate(0xf0)),
-                Instruction::new("rti".into(), AddrMode::Implied),
+                AsmStmt::AsmInstruction(Instruction::new("brk".into(), AddrMode::Implied)),
+                AsmStmt::AsmInstruction(Instruction::new("inc".into(), AddrMode::Implied)),
+                AsmStmt::AsmInstruction(Instruction::new("inx".into(), AddrMode::Implied)),
+                AsmStmt::AsmInstruction(Instruction::new("dec".into(), AddrMode::Implied)),
+                AsmStmt::AsmInstruction(Instruction::new("rts".into(), AddrMode::Implied)),
+                AsmStmt::AsmInstruction(Instruction::new("lda".into(), AddrMode::Immediate(32))),
+                AsmStmt::AsmInstruction(Instruction::new("cmp".into(), AddrMode::Immediate(0xf0))),
+                AsmStmt::AsmInstruction(Instruction::new("rti".into(), AddrMode::Implied)),
             ]
         );
     }
@@ -47,28 +47,28 @@ mod instruction_parse_tests {
 
         assert_eq!(parser.errors().len(), 0);
         assert_eq!(
-            *parser.instructions(),
+            *parser.statements(),
             vec![
-                Instruction::new(
+                AsmStmt::AsmInstruction(Instruction::new(
                     "jsr".into(),
                     AddrMode::Direct(MemoryReference::Variable("my_function".into()))
-                ),
-                Instruction::new(
+                )),
+                AsmStmt::AsmInstruction(Instruction::new(
                     "lda".into(),
                     AddrMode::Direct(MemoryReference::Zeropage(0x32))
-                ),
-                Instruction::new(
+                )),
+                AsmStmt::AsmInstruction(Instruction::new(
                     "stz".into(),
                     AddrMode::Direct(MemoryReference::Zeropage(0xff))
-                ),
-                Instruction::new(
+                )),
+                AsmStmt::AsmInstruction(Instruction::new(
                     "ldx".into(),
                     AddrMode::Direct(MemoryReference::Zeropage(218))
-                ),
-                Instruction::new(
+                )),
+                AsmStmt::AsmInstruction(Instruction::new(
                     "stx".into(),
                     AddrMode::Direct(MemoryReference::Absolute(0x8000))
-                ),
+                )),
             ]
         );
     }

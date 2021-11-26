@@ -4,8 +4,10 @@ use crate::asm::model::Instruction;
 impl<'a> AsmParser<'a> {
     pub fn parse_instruction(&mut self, mnemonic: String) {
         if let Some(addr_mode) = self.parse_addr_mode() {
-            self.instructions
-                .push(Instruction::new(mnemonic, addr_mode));
+            self.statements
+                .push(AsmStmt::AsmInstruction(Instruction::new(
+                    mnemonic, addr_mode,
+                )));
         }
     }
 
