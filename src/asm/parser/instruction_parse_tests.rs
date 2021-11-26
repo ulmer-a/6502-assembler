@@ -11,7 +11,7 @@ mod instruction_parse_tests {
             dec;
             rts
             lda #32;
-            cmp #$0x100 ; rti
+            cmp #0xf0 ; rti
         "#,
         );
         parser.parse();

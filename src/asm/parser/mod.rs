@@ -48,6 +48,7 @@ impl<'a> AsmParser<'a> {
             match token {
                 AsmToken::Identifier => self.parse_instruction(),
                 AsmToken::End => return,
+                AsmToken::Newline => {},
                 _ => {
                     self.error(AsmParseError::UnexpectedToken(token));
                 }
