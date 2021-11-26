@@ -1,5 +1,5 @@
-use logos::Logos;
 use super::AsmToken;
+use logos::Logos;
 
 pub struct AsmLexer<'a> {
     lexer: logos::Lexer<'a, AsmToken>,
@@ -12,7 +12,7 @@ impl<'a> AsmLexer<'a> {
         AsmLexer {
             lexer: AsmToken::lexer(source),
             current_token: AsmToken::Error,
-            line: 1
+            line: 1,
         }
     }
 
@@ -28,7 +28,7 @@ impl<'a> AsmLexer<'a> {
                 Some(u64::from_str_radix(number_str, 16).unwrap())
             }
             AsmToken::DecInteger => Some(u64::from_str_radix(&number_str, 10).unwrap()),
-            _ => None
+            _ => None,
         }
     }
 

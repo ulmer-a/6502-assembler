@@ -1,5 +1,5 @@
 mod lexer;
-mod parser;
 mod model;
+mod parser;
 
 pub use parser::AsmParser;

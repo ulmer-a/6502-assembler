@@ -1,7 +1,4 @@
-use super::{
-    AsmLexer, AsmToken,
-    super::model::*,
-};
+use super::{super::model::*, AsmLexer, AsmToken};
 
 pub enum ErrorType {
     UnexpectedToken(AsmToken),
@@ -33,7 +30,7 @@ impl<'a> AsmParser<'a> {
     fn error(&mut self, error_type: ErrorType) {
         self.errors.push(CompileError {
             error_type,
-            line: self.lexer.line()
+            line: self.lexer.line(),
         });
     }
 
@@ -60,9 +57,7 @@ impl<'a> AsmParser<'a> {
 
     fn parse_addr_mode(&mut self) -> Option<AddrMode> {
         match self.lexer.next_token() {
-            AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => {
-                Some(AddrMode::Implied)
-            },
+            AsmToken::Error | AsmToken::Semicolon | AsmToken::Newline => Some(AddrMode::Implied),
             AsmToken::ImmediateModifier => self.parse_immediate(),
             _ => self.parse_mem_addr_mode(),
         }

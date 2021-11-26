@@ -1,4 +1,4 @@
-use std::{str::FromStr};
+use std::str::FromStr;
 use strum::EnumString;
 
 #[derive(EnumString)]
