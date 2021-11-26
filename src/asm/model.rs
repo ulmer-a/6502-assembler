@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use strum::EnumString;
 
-#[derive(EnumString)]
+#[derive(EnumString, Debug, PartialEq)]
 pub enum Mnemonic {
     ADC, // add with carry
     AND, // and with A register
@@ -75,6 +75,7 @@ pub enum Mnemonic {
     WAI, // wait for interrupt
 }
 
+#[derive(Debug, PartialEq)]
 pub enum AddrMode {
     Implied,
     Immediate(u8),
@@ -83,13 +84,14 @@ pub enum AddrMode {
     DirectIndexedY(MemoryReference),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum MemoryReference {
     Variable(String),
     Zeropage(u8),
     Absolute(u16),
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Instruction {
     mnemonic: Mnemonic,
     addr_mode: AddrMode,
