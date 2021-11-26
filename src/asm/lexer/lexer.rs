@@ -16,9 +16,20 @@ impl<'a> AsmLexer<'a> {
         }
     }
 
-    #[cfg(test)]
-    pub fn lexer(&mut self) -> &mut logos::Lexer<'a, AsmToken> {
-        &mut self.lexer
+    pub fn numeric_value(&self) -> Option<u64> {
+        let mut number_str = self.lexer.slice();
+        match self.current_token {
+            AsmToken::HexInteger => {
+                if number_str.chars().next().unwrap() == '$' {
+                    number_str = &number_str[1..];
+                } else {
+                    number_str = &number_str[2..];
+                }
+                Some(u64::from_str_radix(number_str, 16).unwrap())
+            }
+            AsmToken::DecInteger => Some(u64::from_str_radix(&number_str, 10).unwrap()),
+            _ => None
+        }
     }
 
     pub fn line(&self) -> u32 {

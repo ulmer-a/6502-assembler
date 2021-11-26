@@ -134,22 +134,6 @@ impl<'a> AsmParser<'a> {
     }
 
     fn parse_integer_literal(&mut self) -> Option<u64> {
-        let mut number_str = self.lexer.slice();
-        let token = self.lexer.current_token();
-        match token {
-            AsmToken::HexInteger => {
-                if number_str.chars().next().unwrap() == '$' {
-                    number_str = &number_str[1..];
-                } else {
-                    number_str = &number_str[2..];
-                }
-                Some(u64::from_str_radix(number_str, 16).unwrap())
-            }
-            AsmToken::DecInteger => Some(u64::from_str_radix(&number_str, 10).unwrap()),
-            _ => {
-                self.error(ErrorType::UnexpectedToken(token));
-                None
-            }
-        }
+        self.lexer.numeric_value()
     }
 }
