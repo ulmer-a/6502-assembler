@@ -1,4 +1,4 @@
-use crate::asm::{AsmParser, model::{AddrMode, AsmStmt, MemoryReference}};
+use crate::asm::{AsmParser, model::{AddrMode, AsmStmt, IndexMode, MemRef}};
 
 #[test]
 fn simple_labels() {
@@ -20,7 +20,7 @@ fn simple_labels() {
             AsmStmt::new_label("my_label".into()),
             AsmStmt::new_instr("no_label".into(), AddrMode::Implied),
             AsmStmt::new_label("tw".into()),
-            AsmStmt::new_instr("lda".into(), AddrMode::Direct(MemoryReference::Variable("variable".into()))),
+            AsmStmt::new_instr("lda".into(), AddrMode::Memory(IndexMode::None, MemRef::Variable("variable".into()))),
         ]
     );
 }

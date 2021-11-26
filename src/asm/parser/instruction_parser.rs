@@ -47,26 +47,24 @@ impl<'a> AsmParser<'a> {
                 None
             }
         } else {
-            Some(AddrMode::Direct(mem_ref))
+            Some(AddrMode::Memory(IndexMode::None, mem_ref))
         }
     }
 
-    fn parse_mem_ref(&mut self) -> Option<MemoryReference> {
+    fn parse_mem_ref(&mut self) -> Option<MemRef> {
         let token = self.lexer.current_token();
         match token {
             AsmToken::DecInteger | AsmToken::HexInteger => {
                 let addr = self.parse_integer_literal()?;
-                if addr < 0x100 {
-                    Some(MemoryReference::Zeropage(addr as u8))
-                } else if addr < 0x10000 {
-                    Some(MemoryReference::Absolute(addr as u16))
+                if addr < 0x10000 {
+                    Some(MemRef::Addr(addr as u16))
                 } else {
                     self.error(AsmParseError::AddressTooLarge);
                     None
                 }
             }
             AsmToken::Identifier => {
-                Some(MemoryReference::Variable(String::from(self.lexer.slice())))
+                Some(MemRef::Variable(String::from(self.lexer.slice())))
             }
             _ => {
                 self.error(AsmParseError::UnexpectedToken(token));
@@ -75,11 +73,11 @@ impl<'a> AsmParser<'a> {
         }
     }
 
-    fn parse_index_mode(&mut self, mem_ref: MemoryReference) -> Option<AddrMode> {
+    fn parse_index_mode(&mut self, mem_ref: MemRef) -> Option<AddrMode> {
         let id_text = self.lexer.slice().to_lowercase();
         match id_text.as_ref() {
-            "x" => Some(AddrMode::DirectIndexedX(mem_ref)),
-            "y" => Some(AddrMode::DirectIndexedY(mem_ref)),
+            "x" => Some(AddrMode::Memory(IndexMode::IndexedX, mem_ref)),
+            "y" => Some(AddrMode::Memory(IndexMode::IndexedY, mem_ref)),
             _ => {
                 self.error(AsmParseError::InvalidIndexRegister(id_text));
                 None

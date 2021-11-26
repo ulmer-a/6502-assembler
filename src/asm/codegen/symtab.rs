@@ -16,4 +16,10 @@ impl SymbolTable {
         self.symbols.insert(name.into(), value);
     }
 
+    pub fn find(&self, name: &str) -> Option<u16> {
+        match self.symbols.get(name.into()) {
+            Some(addr) => Some(*addr),
+            None => None,
+        }
+    }
 }

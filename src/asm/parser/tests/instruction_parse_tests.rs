@@ -49,23 +49,23 @@ fn parse_direct_mem_refs() {
         vec![
             AsmStmt::new_instr(
                 "jsr".into(),
-                AddrMode::Direct(MemoryReference::Variable("my_function".into()))
+                AddrMode::Memory(IndexMode::None, MemRef::Variable("my_function".into()))
             ),
             AsmStmt::new_instr(
                 "lda".into(),
-                AddrMode::Direct(MemoryReference::Zeropage(0x32))
+                AddrMode::Memory(IndexMode::None, MemRef::Addr(0x32))
             ),
             AsmStmt::new_instr(
                 "stz".into(),
-                AddrMode::Direct(MemoryReference::Zeropage(0xff))
+                AddrMode::Memory(IndexMode::None, MemRef::Addr(0xff))
             ),
             AsmStmt::new_instr(
                 "ldx".into(),
-                AddrMode::Direct(MemoryReference::Zeropage(218))
+                AddrMode::Memory(IndexMode::None, MemRef::Addr(218))
             ),
             AsmStmt::new_instr(
                 "stx".into(),
-                AddrMode::Direct(MemoryReference::Absolute(0x8000))
+                AddrMode::Memory(IndexMode::None, MemRef::Addr(0x8000))
             ),
         ]
     );

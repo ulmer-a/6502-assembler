@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr};
 use strum::EnumString;
 
 #[derive(Debug, PartialEq)]
@@ -31,96 +31,128 @@ pub struct Instruction {
     addr_mode: AddrMode,
 }
 
-#[derive(EnumString, Debug, PartialEq)]
+#[derive(EnumString, Debug, PartialEq, Copy, Clone)]
 pub enum Mnemonic {
-    ADC, // add with carry
-    AND, // and with A register
-    ASL, // arithmetic shift left
-    BBR, // branch if bit clear
-    BBS, // branch if bit set
-    BCC, // branch if carry clear
-    BCS, // branch if carry set
-    BEQ, // branch if equal, branch if zero
-    BIT, // and with A register, no writeback
-    BMI, // branch if negative
-    BNE, // branch if not equal, branch if not zero
-    BPL, // branch if positive
-    BRA, // branch always
-    BRK, // break instruction
-    BVC, // branch if overflow clear
-    BVS, // branch if overflow set
-    CLC, // clear carry
-    CLD, // clear decimal flag
-    CLI, // enable interrupts
-    CLV, // clear overflow flag
-    CMP, // compare A register
-    CPX, // compare X register
-    CPY, // compare Y register
-    DEC, // decrement A register or memory
-    DEX, // decrement X register
-    DEY, // decrement Y register
-    EOR, // xor with A register
-    INC, // increment A register or memory
-    INX, // increment X register
-    INY, // increment Y register
-    JMP, // jump
-    JSR, // jump to subroutine (call)
-    LDA, // load A register
-    LDX, // load X register
-    LDY, // load Y register
-    LSR, // logical shift right
-    NOP, // no operation
-    ORA, // or with A register
-    PHA, // push A register to stack
-    PHP, // push status register to stack
-    PHX, // push X register to stack
-    PHY, // push Y register to stack
-    PLA, // pop A register from stack
-    PLP, // pull status register from stack
-    PLX, // pull X register from stack
-    PLY, // pull Y register from stack
-    RMB, // clear bit in memory
-    ROL, // rotate left
-    ROR, // rotate right
-    RTI, // return from interrupt
-    RTS, // return from subroutine
-    SBC, // subtract with carry
-    SEC, // set carry flag
-    SED, // set decimal flag
-    SEI, // disable interrupts
-    SMB, // set memory bit
-    STA, // store A register in memory
-    STP, // stop CPU clock (halt)
-    STX, // store X register in memory
-    STY, // store Y register in memory
-    STZ, // store zero in memory
-    TAX, // transfer A -> X
-    TAY, // transfer A -> Y
-    TRB, // test and clear memory bit
-    TSB, // test and set memory bit
-    TSX, // transfer SP -> X
-    TXA, // transfer X -> A
-    TXS, // transfer X -> SP
-    TYA, // transfer Y -> A
-    WAI, // wait for interrupt
+    BRK,
+    ORA,
+    NOP,
+    TSB,
+    ASL,
+    RMB0,
+    PHP,
+    BBR0,
+    BPL,
+    TRB,
+    RMB1,
+    CLC,
+    INC,
+    BBR1,
+    JSR,
+    AND,
+    BIT,
+    ROL,
+    RMB2,
+    PLP,
+    BBR2,
+    BMI,
+    RMB3,
+    SEC,
+    DEC,
+    BBR3,
+    RTI,
+    EOR,
+    LSR,
+    RMB4,
+    PHA,
+    JMP,
+    BBR4,
+    BVC,
+    RMB5,
+    CLI,
+    PHY,
+    BBR5,
+    RTS,
+    ADC,
+    STZ,
+    ROR,
+    RMB6,
+    PLA,
+    BBR6,
+    BVS,
+    RMB7,
+    SEI,
+    PLY,
+    BBR7,
+    BRA,
+    STA,
+    STY,
+    STX,
+    SMB0,
+    DEY,
+    TXA,
+    BBS0,
+    BCC,
+    SMB1,
+    TYA,
+    TXS,
+    BBS1,
+    LDY,
+    LDA,
+    LDX,
+    SMB2,
+    TAY,
+    TAX,
+    BBS2,
+    BCS,
+    SMB3,
+    CLV,
+    TSX,
+    BBS3,
+    CPY,
+    CMP,
+    SMB4,
+    INY,
+    DEX,
+    WAI,
+    BBS4,
+    BNE,
+    SMB5,
+    CLD,
+    PHX,
+    STP,
+    BBS5,
+    CPX,
+    SBC,
+    SMB6,
+    INX,
+    BBS6,
+    BEQ,
+    SMB7,
+    SED,
+    PLX,
+    BBS7,
 
     Invalid,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum IndexMode {
+    IndexedX,
+    IndexedY,
+    None,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum AddrMode {
     Implied,
     Immediate(u8),
-    Direct(MemoryReference),
-    DirectIndexedX(MemoryReference),
-    DirectIndexedY(MemoryReference),
+    Memory(IndexMode, MemRef),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum MemoryReference {
+pub enum MemRef {
     Variable(String),
-    Zeropage(u8),
-    Absolute(u16),
+    Addr(u16),
 }
 
 impl Instruction {
@@ -130,7 +162,15 @@ impl Instruction {
                 Ok(m) => m,
                 Err(_) => Mnemonic::Invalid,
             },
-            addr_mode: addr_mode,
+            addr_mode,
         }
+    }
+
+    pub fn addr_mode(&self) -> AddrMode {
+        self.addr_mode.clone()
+    }
+
+    pub fn mnemonic_index(&self) -> usize {
+        self.mnemonic as usize
     }
 }

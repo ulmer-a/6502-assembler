@@ -1,10 +1,14 @@
 mod symtab;
+mod codeblob;
 use symtab::SymbolTable;
+use self::codeblob::CodeBlob;
+
 use super::model::AsmStmt;
 
 pub struct Linker<'a> {
     objects: Vec<&'a Vec<AsmStmt>>,
     symbols: SymbolTable,
+    blob: CodeBlob,
 }
 
 impl<'a> Linker<'a> {
@@ -12,6 +16,7 @@ impl<'a> Linker<'a> {
         Linker {
             objects: vec![],
             symbols: SymbolTable::new(),
+            blob: CodeBlob::new(),
         }
     }
 
@@ -21,6 +26,22 @@ impl<'a> Linker<'a> {
 
     pub fn link(&mut self) {
         self.collect_symbols();
+
+        for obj in self.objects.iter() {
+            for stmt in obj.iter() {
+                if let AsmStmt::AsmInstruction(instr) = stmt {
+                    self.blob.gen_instruction(instr, |name| {
+                        match self.symbols.find(name) {
+                            Some(addr) => addr,
+                            None => {
+                                println!("todo relocate symbol {}", name);
+                                0x0000
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     fn collect_symbols(&mut self) {
