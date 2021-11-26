@@ -5,6 +5,7 @@ use strum::EnumString;
 pub enum AsmStmt {
     AsmInstruction(Instruction),
     Label(String),
+    ConstLabel(String, u16),
 }
 
 impl AsmStmt {
@@ -12,9 +13,15 @@ impl AsmStmt {
     pub fn new_instr(mnemonic: String, addr_mode: AddrMode) -> AsmStmt {
         AsmStmt::AsmInstruction(Instruction::new(mnemonic, addr_mode))
     }
+
     #[cfg(test)]
     pub fn new_label(name: String) -> AsmStmt {
         AsmStmt::Label(name)
+    }
+
+    #[cfg(test)]
+    pub fn new_const_label(name: String, addr: u16) -> AsmStmt {
+        AsmStmt::ConstLabel(name, addr)
     }
 }
 

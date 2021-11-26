@@ -1,7 +1,7 @@
 use std::{env, fs};
 mod asm;
 mod errors;
-use asm::AsmParser;
+use asm::{AsmParser, Linker};
 
 fn main() {
     let filename = env::args().skip(1).next().unwrap();
@@ -11,4 +11,8 @@ fn main() {
     parser.parse();
 
     parser.dump_errors();
+
+    let mut linker = Linker::new();
+    linker.add_obj(parser.statements());
+    linker.link();
 }

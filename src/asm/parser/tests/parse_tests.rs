@@ -4,6 +4,7 @@ use crate::asm::{AsmParser, model::{AddrMode, AsmStmt, MemoryReference}};
 fn simple_labels() {
     let mut parser = AsmParser::new(&r#"
             brk
+            driver_addr = $34;
         my_label:
             no_label
         tw: lda variable
@@ -15,6 +16,7 @@ fn simple_labels() {
         *parser.statements(),
         vec![
             AsmStmt::new_instr("brk".into(), AddrMode::Implied),
+            AsmStmt::new_const_label("driver_addr".into(), 0x34),
             AsmStmt::new_label("my_label".into()),
             AsmStmt::new_instr("no_label".into(), AddrMode::Implied),
             AsmStmt::new_label("tw".into()),

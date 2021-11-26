@@ -26,7 +26,6 @@ impl<'a> AsmParser<'a> {
         }
     }
 
-    #[cfg(test)]
     pub fn statements(&self) -> &Vec<AsmStmt> {
         &self.statements
     }
@@ -47,8 +46,12 @@ impl<'a> AsmParser<'a> {
             .push(CompileError::new(error_type, self.lexer.line()));
     }
 
-    fn insert_label(&mut self, name: String) {
-        self.statements.push(AsmStmt::Label(name));
+    fn insert_label(&mut self, name: String, addr: Option<u16>) {
+        if let Some(addr) = addr {
+            self.statements.push(AsmStmt::ConstLabel(name, addr));
+        } else {
+            self.statements.push(AsmStmt::Label(name));
+        }
     }
 
     pub fn parse(&mut self) {
@@ -60,7 +63,8 @@ impl<'a> AsmParser<'a> {
                     // lookahead has to be performed.
                     let identifier: String = self.lexer.slice().into();
                     match self.lexer.next_token() {
-                        AsmToken::Colon => self.insert_label(identifier),
+                        AsmToken::Colon => self.insert_label(identifier, None),
+                        AsmToken::AssignmentOperator => self.parse_const_addr(identifier),
                         _ => self.parse_instruction(identifier),
                     }
                 }
@@ -88,5 +92,18 @@ impl<'a> AsmParser<'a> {
         }
 
         result
+    }
+
+    fn parse_const_addr(&mut self, name: String) {
+        let token = self.lexer.next_token(); // skip assignment operator
+        if let Some(addr) = self.lexer.numeric_value() {
+            if addr <= 0xffff {
+                self.insert_label(name, Some(addr as u16));
+            } else {
+                self.error(AsmParseError::AddressTooLarge);
+            }
+        } else {
+            self.error(AsmParseError::UnexpectedToken(token));
+        }
     }
 }
