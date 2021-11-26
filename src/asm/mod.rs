@@ -1,7 +1,7 @@
 mod lexer;
 mod model;
 mod parser;
-mod linker;
+mod codegen;
 
 pub use parser::AsmParser;
-pub use linker::Linker;
+pub use codegen::Linker;
