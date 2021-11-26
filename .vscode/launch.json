@@ -7,34 +7,34 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'rehill'",
+            "name": "Debug executable 'retro-lang'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=rehill",
-                    "--package=rehill"
+                    "--bin=retro-lang",
+                    "--package=retro-lang"
                 ],
                 "filter": {
-                    "name": "rehill",
+                    "name": "retro-lang",
                     "kind": "bin"
                 }
             },
-            "args": [ "test.S" ],
+            "args": [ "examples/test.S" ],
             "cwd": "${workspaceFolder}"
         },
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'rehill'",
+            "name": "Debug unit tests in executable 'retro-lang'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=rehill",
-                    "--package=rehill"
+                    "--bin=retro-lang",
+                    "--package=retro-lang"
                 ],
                 "filter": {
-                    "name": "rehill",
+                    "name": "retro-lang",
                     "kind": "bin"
                 }
             },
