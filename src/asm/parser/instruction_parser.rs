@@ -63,9 +63,7 @@ impl<'a> AsmParser<'a> {
                     None
                 }
             }
-            AsmToken::Identifier => {
-                Some(MemRef::Variable(String::from(self.lexer.slice())))
-            }
+            AsmToken::Identifier => Some(MemRef::Variable(String::from(self.lexer.slice()))),
             _ => {
                 self.error(AsmParseError::UnexpectedToken(token));
                 None

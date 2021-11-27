@@ -1,5 +1,4 @@
-use std::{collections::HashMap};
-
+use std::collections::HashMap;
 
 pub struct SymbolTable {
     symbols: HashMap<String, u16>,
