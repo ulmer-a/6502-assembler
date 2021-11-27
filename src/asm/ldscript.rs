@@ -83,3 +83,16 @@ fn linker_script_parser_test() {
         }
     ]);
 }
+
+#[test]
+fn linker_script_error_test() {
+    let sections = parse(r#"
+        @0x0001
+        .text
+        .data
+        .vectors @0xfffa
+    "#.into());
+    assert_eq!(sections, Err(
+        "unexpected token: '@0x0001'".into()
+    ));
+}
