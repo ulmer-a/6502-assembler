@@ -47,7 +47,7 @@ impl CodeBlob {
         }
         for (name, offset) in self.rel8.iter() {
             if let Some(addr) = global_symbols.find(name) {
-                let delta = (addr as i16 - (base_addr + offset) as i16) as i8;
+                let delta = addr as i16 - (base_addr + offset + 1) as i16;
                 self.blob[*offset as usize] = delta as u8;
             } else {
                 println!("undefined reference to symbol {}", name);
@@ -105,11 +105,14 @@ impl CodeBlob {
                             let rel_addr = (self.blob.len() + 1) as u16;
                             if instruction.has_rel_addressing() {
                                 self.rel8.insert(name, rel_addr);
+                                Some(0xff)
                             } else {
                                 self.rel16.insert(name, rel_addr);
+                                Some(0xffff)
                             }
+                        } else {
+                            addr
                         }
-                        addr
                     }
                 };
 
