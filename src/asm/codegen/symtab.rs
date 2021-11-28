@@ -6,7 +6,9 @@ pub struct SymbolTable {
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
-        SymbolTable { symbols: HashMap::new() }
+        SymbolTable {
+            symbols: HashMap::new(),
+        }
     }
 
     pub fn new_with_registers() -> SymbolTable {

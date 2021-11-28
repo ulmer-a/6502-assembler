@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{opcode_table::OPCODE_TABLE, symtab::SymbolTable};
+use super::{opcode_table::get_opcode, symtab::SymbolTable};
 use crate::asm::model::{AddrMode, AsmStmt, DataPlacement, IndexMode, Instruction, MemRef};
 
 pub struct CodeBlob {
@@ -38,7 +38,7 @@ impl CodeBlob {
                 Some(addr) => {
                     self.blob[*offset as usize] = (addr & 0xff) as u8;
                     self.blob[*offset as usize + 1] = (addr >> 8) as u8;
-                },
+                }
                 None => {
                     println!("undefined reference to symbol {}", name);
                     continue;
@@ -53,7 +53,7 @@ impl CodeBlob {
                         continue;
                     }
                     self.blob[*offset as usize] = addr as u8;
-                },
+                }
                 None => {
                     println!("undefined reference to symbol {}", name);
                     continue;
@@ -111,7 +111,7 @@ impl CodeBlob {
                             self.rel16.insert(name, (self.blob.len() + 1) as u16);
                         }
                         addr
-                    },
+                    }
                 };
 
                 if addr.is_some() && addr.unwrap() < 256 {
@@ -131,18 +131,11 @@ impl CodeBlob {
             }
         };
 
-        if let Some(opcode) = Self::get_opcode(mnemonic_i, addr_mode_i) {
+        if let Some(opcode) = get_opcode(mnemonic_i, addr_mode_i) {
             self.blob.push(opcode);
             self.blob.append(operand);
         } else {
             println!("invalid addr mode {:?}", instruction.addr_mode());
-        }
-    }
-
-    fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
-        match OPCODE_TABLE[mnemonic_i][addr_mode_i] {
-            -1 => Self::get_opcode(mnemonic_i, 13),
-            opcode => Some(opcode as u8),
         }
     }
 }

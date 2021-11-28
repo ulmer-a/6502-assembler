@@ -1,6 +1,6 @@
 mod codeblob;
 mod symtab;
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use self::codeblob::CodeBlob;
 use super::{ldscript::LdSection, model::AsmStmt, parser::SectionSink};
@@ -39,8 +39,7 @@ impl Linker {
         self.collect_symbols();
         self.generate_statements();
         self.resolve_all_symbols(&sections_to_link);
-        self.relocate_blobs(&sections_to_link);
-        
+
         let mut binary: Vec<u8> = vec![];
         let mut current_addr = sections_to_link[0].load_addr().unwrap();
         for section in sections_to_link.iter() {
@@ -50,7 +49,7 @@ impl Linker {
                     let mut padding = vec![0u8; padding as usize];
                     binary.append(&mut padding);
                     addr
-                },
+                }
                 None => current_addr,
             };
 
@@ -83,9 +82,7 @@ impl Linker {
             // iterate over all sections and statements and actually generate
             // code from the model. undefined symbols are reported for relocation.
             for stmt in stmts.iter() {
-                blob.gen_stmt(stmt, |name| {
-                    self.symbols.find(name)
-                });
+                blob.gen_stmt(stmt, |name| self.symbols.find(name));
             }
 
             self.blobs.insert(section_name.into(), blob);
@@ -104,10 +101,15 @@ impl Linker {
             self.symbols.insert_table(blob.symbols(), load_addr);
             current_addr = load_addr + blob.size() as u16;
         }
+
+        self.relocate_blobs(link_sections);
     }
 
     fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) {
         for section in link_sections.iter() {
+            // resolve symbols: go over the binary blobs again and fill in the
+            // placeholders with the actual addresses that have accumulated
+            // in the symbol table by now.
             let blob = self.blobs.get_mut(section.name()).unwrap();
             blob.resolve_symbols(&self.symbols);
         }

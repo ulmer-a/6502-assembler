@@ -1,5 +1,12 @@
 
-pub const OPCODE_TABLE: [[i16; 14]; 98] = [
+pub fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
+    match OPCODE_TABLE[mnemonic_i][addr_mode_i] {
+        -1 => get_opcode(mnemonic_i, 13),
+        opcode => Some(opcode as u8),
+    }
+}
+
+const OPCODE_TABLE: [[i16; 14]; 98] = [
     //  IMPL   IMM    ZP  zp,X  zp,Y  (zp)(zp,X)(zp),Y   abs abs,X abs,Y (abs)(abs,X)  rel
     [ 0x00,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1 ], // BRK
     [   -1, 0x09, 0x05, 0x15,   -1, 0x12, 0x01, 0x11, 0x0d, 0x1d, 0x19,   -1,   -1,   -1 ], // ORA

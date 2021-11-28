@@ -27,7 +27,7 @@ impl LdSection {
     pub fn new(name: &str, load_addr: Option<u16>) -> LdSection {
         LdSection {
             name: name.into(),
-            load_addr
+            load_addr,
         }
     }
 
