@@ -91,8 +91,8 @@ impl Linker {
         // from any section so that the zeropage addr mode can be
         // used if it's available for an instruction and the address
         // fits into 8 bits.
-        for (_, obj) in self.sections.iter() {
-            for stmt in obj.iter() {
+        for (_, section_stmts) in self.sections.iter() {
+            for stmt in section_stmts.iter() {
                 if let AsmStmt::ConstLabel(name, addr) = stmt {
                     self.symbols.insert(name, *addr);
                 }
