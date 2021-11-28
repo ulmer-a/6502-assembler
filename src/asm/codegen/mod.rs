@@ -31,32 +31,15 @@ impl Linker {
         Linker {
             sections: HashMap::new(),
             blobs: HashMap::new(),
-            symbols: SymbolTable::new(),
+            symbols: SymbolTable::new_with_registers(),
         }
     }
 
     pub fn link(&mut self, sections_to_link: Vec<LdSection>) -> Vec<u8> {
         self.collect_symbols();
         self.generate_statements();
-
-        let load_addr = self.calc_load_addr(sections_to_link.iter());
-        println!("load_addr: 0x{:x}", load_addr);
+        self.resolve_all_symbols(&sections_to_link);
         vec![]
-    }
-
-    fn calc_load_addr(&self, sections_to_link: std::slice::Iter<LdSection>) -> u16 {
-        let mut sections_to_link = sections_to_link;
-        let current_section = match sections_to_link.next() {
-            Some(section) => section,
-            None => return 0x0000,
-        };
-        match current_section.load_addr() {
-            Some(addr) => addr,
-            None => {
-                let next_addr = self.calc_load_addr(sections_to_link);
-                next_addr + self.blobs.get(current_section.name()).unwrap().size() as u16
-            }
-        }
     }
 
     fn collect_symbols(&mut self) {
@@ -89,6 +72,20 @@ impl Linker {
             }
 
             self.blobs.insert(section_name.into(), blob);
+        }
+    }
+
+    fn resolve_all_symbols(&mut self, link_sections: &Vec<LdSection>) {
+        let mut current_addr = link_sections[0].load_addr().unwrap();
+        for section in link_sections.iter() {
+            let load_addr = match section.load_addr() {
+                Some(addr) => addr,
+                None => current_addr,
+            };
+
+            let blob = self.blobs.get_mut(section.name()).unwrap();
+            self.symbols.insert_table(blob.symbols(), load_addr);
+            current_addr = load_addr + blob.size() as u16;
         }
     }
 }

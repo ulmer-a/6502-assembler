@@ -6,15 +6,26 @@ pub struct SymbolTable {
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
-        let mut symbols = HashMap::new();
+        SymbolTable { symbols: HashMap::new() }
+    }
+
+    pub fn new_with_registers() -> SymbolTable {
+        let mut table = SymbolTable::new();
         for i in 0..32 {
-            symbols.insert(format!("r{}", i), i);
+            table.insert(&format!("r{}", i), i);
         }
-        SymbolTable { symbols }
+        table
     }
 
     pub fn insert(&mut self, name: &str, value: u16) {
         self.symbols.insert(name.into(), value);
+    }
+
+    pub fn insert_table(&mut self, table: &SymbolTable, offset: u16) {
+        for (name, addr) in table.symbols.iter() {
+            self.symbols.insert(name.into(), addr + offset);
+            println!("name: {}, addr: {:04x}", name, addr + offset);
+        }
     }
 
     pub fn find(&self, name: &str) -> Option<u16> {
