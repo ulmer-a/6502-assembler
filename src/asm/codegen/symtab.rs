@@ -10,9 +10,7 @@ impl SymbolTable {
         for i in 0..32 {
             symbols.insert(format!("r{}", i), i);
         }
-        SymbolTable {
-            symbols,
-        }
+        SymbolTable { symbols }
     }
 
     pub fn insert(&mut self, name: &str, value: u16) {

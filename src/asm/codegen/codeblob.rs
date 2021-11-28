@@ -1,17 +1,27 @@
-use super::opcode_table::OPCODE_TABLE;
+use super::{opcode_table::OPCODE_TABLE, symtab::SymbolTable};
 use crate::asm::model::{AddrMode, IndexMode, Instruction, MemRef};
 
 pub struct CodeBlob {
     blob: Vec<u8>,
+    symbols: SymbolTable,
 }
 
 impl CodeBlob {
     pub fn new() -> CodeBlob {
-        CodeBlob { blob: vec![] }
+        CodeBlob {
+            blob: vec![],
+            symbols: SymbolTable::new(),
+        }
     }
 
     pub fn dump(&self) {
         println!("{:02x?}", self.blob);
+    }
+
+    pub fn insert_label(&mut self, name: &str) {
+        let current_addr = self.blob.len();
+        assert!(current_addr <= 0xffff);
+        self.symbols.insert(name, current_addr as u16);
     }
 
     pub fn gen_instruction<F>(&mut self, instruction: &Instruction, lookup: F)
@@ -53,13 +63,13 @@ impl CodeBlob {
             self.blob.push(opcode);
             self.blob.append(operand);
         } else {
-            // invalid addr mode
+            println!("invalid addr mode {:?}", instruction.addr_mode());
         }
     }
 
     fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
         match OPCODE_TABLE[mnemonic_i][addr_mode_i] {
-            -1 => None,
+            -1 => Self::get_opcode(mnemonic_i, 13),
             opcode => Some(opcode as u8),
         }
     }

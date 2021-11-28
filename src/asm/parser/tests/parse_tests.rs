@@ -1,7 +1,4 @@
-use crate::asm::{
-    model::{AddrMode, AsmStmt, IndexMode, MemRef},
-    AsmParser,
-};
+use crate::asm::{AsmParser, model::{AddrMode, AsmStmt, IndexMode, MemRef}, parser::tests::StmtCollector};
 
 #[test]
 fn simple_labels() {
@@ -14,11 +11,12 @@ fn simple_labels() {
         tw: lda variable
     "#,
     );
-    parser.parse();
+    let mut stmts = StmtCollector::new();
+    parser.parse(&mut stmts);
 
     assert_eq!(parser.errors().len(), 0);
     assert_eq!(
-        *parser.statements(),
+        *stmts.statements(),
         vec![
             AsmStmt::new_instr("brk".into(), AddrMode::Implied),
             AsmStmt::new_const_label("driver_addr".into(), 0x34),

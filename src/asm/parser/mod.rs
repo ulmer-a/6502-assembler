@@ -13,21 +13,23 @@ use errors::AsmParseError;
 
 pub struct AsmParser<'a> {
     lexer: AsmLexer<'a>,
-    statements: Vec<AsmStmt>,
     errors: Vec<CompileError<AsmParseError>>,
+    current_section_name: String,
+    statements: Vec<AsmStmt>,
+}
+
+pub trait SectionSink {
+    fn push_section(&mut self, name: &str, stmts: Vec<AsmStmt>);
 }
 
 impl<'a> AsmParser<'a> {
     pub fn new(source: &str) -> AsmParser {
         AsmParser {
             lexer: AsmLexer::new(source),
-            statements: vec![],
             errors: vec![],
+            current_section_name: "text".into(),
+            statements: vec![],
         }
-    }
-
-    pub fn statements(&self) -> &Vec<AsmStmt> {
-        &self.statements
     }
 
     #[cfg(test)]
@@ -35,10 +37,13 @@ impl<'a> AsmParser<'a> {
         &self.errors
     }
 
-    pub fn dump_errors(&self) {
+    pub fn dump_errors(&self) -> usize {
+        let mut error_count = 0;
         for error in self.errors.iter() {
             error.print();
+            error_count += 1;
         }
+        error_count
     }
 
     fn error(&mut self, error_type: AsmParseError) {
@@ -54,7 +59,7 @@ impl<'a> AsmParser<'a> {
         }
     }
 
-    pub fn parse(&mut self) {
+    pub fn parse<T: SectionSink>(&mut self, sink: &mut T) {
         loop {
             match self.lexer.next_token() {
                 AsmToken::Identifier => {
@@ -68,13 +73,17 @@ impl<'a> AsmParser<'a> {
                         _ => self.parse_instruction(identifier),
                     }
                 }
-                AsmToken::End => return,
+                AsmToken::End => break,
                 AsmToken::Newline | AsmToken::Semicolon => {}
                 token => {
                     self.error(AsmParseError::UnexpectedToken(token));
                 }
             }
         }
+        sink.push_section(
+            &self.current_section_name,
+            std::mem::replace(&mut self.statements, vec![]),
+        );
     }
 
     fn parse_until<T, F: Fn(&mut Self) -> T>(&mut self, end_tokens: Vec<AsmToken>, func: F) -> T {

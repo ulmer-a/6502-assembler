@@ -63,36 +63,44 @@ pub fn parse(source: &str) -> Result<Vec<LdSection>, String> {
 
 #[test]
 fn linker_script_parser_test() {
-    let sections = parse(r#"
+    let sections = parse(
+        r#"
         .text @0xe000
         .data
         .vectors @0xfffa
-    "#.into()).unwrap();
-    assert_eq!(sections, vec![
-        LdSection {
-            name: "text".into(),
-            load_addr: Some(0xe000),
-        },
-        LdSection {
-            name: "data".into(),
-            load_addr: None,
-        },
-        LdSection {
-            name: "vectors".into(),
-            load_addr: Some(0xfffa),
-        }
-    ]);
+    "#
+        .into(),
+    )
+    .unwrap();
+    assert_eq!(
+        sections,
+        vec![
+            LdSection {
+                name: "text".into(),
+                load_addr: Some(0xe000),
+            },
+            LdSection {
+                name: "data".into(),
+                load_addr: None,
+            },
+            LdSection {
+                name: "vectors".into(),
+                load_addr: Some(0xfffa),
+            }
+        ]
+    );
 }
 
 #[test]
 fn linker_script_error_test() {
-    let sections = parse(r#"
+    let sections = parse(
+        r#"
         @0x0001
         .text
         .data
         .vectors @0xfffa
-    "#.into());
-    assert_eq!(sections, Err(
-        "unexpected token: '@0x0001'".into()
-    ));
+    "#
+        .into(),
+    );
+    assert_eq!(sections, Err("unexpected token: '@0x0001'".into()));
 }

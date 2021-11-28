@@ -1,55 +1,76 @@
 mod codeblob;
 mod symtab;
+use std::collections::HashMap;
+
 use self::codeblob::CodeBlob;
-use super::model::AsmStmt;
+use super::{model::AsmStmt, parser::SectionSink};
 use symtab::SymbolTable;
 
 #[rustfmt::skip]
 mod opcode_table;
 
-pub struct Linker<'a> {
-    objects: Vec<&'a Vec<AsmStmt>>,
+pub struct Linker {
+    sections: HashMap<String, Vec<AsmStmt>>,
     symbols: SymbolTable,
-    blob: CodeBlob,
 }
 
-impl<'a> Linker<'a> {
-    pub fn new() -> Linker<'a> {
-        Linker {
-            objects: vec![],
-            symbols: SymbolTable::new(),
-            blob: CodeBlob::new(),
+impl SectionSink for Linker {
+    fn push_section(&mut self, name: &str, stmts: Vec<AsmStmt>) {
+        let mut stmts = stmts;
+        if let Some(section_stmts) = self.sections.get_mut(name) {
+            section_stmts.append(&mut stmts);
+        } else {
+            self.sections.insert(name.into(), stmts);
         }
     }
+}
 
-    pub fn add_obj(&mut self, obj: &'a Vec<AsmStmt>) {
-        self.objects.push(obj);
+impl Linker {
+    pub fn new() -> Linker {
+        Linker {
+            sections: HashMap::new(),
+            symbols: SymbolTable::new(),
+        }
     }
 
     pub fn link(&mut self) {
         self.collect_symbols();
+        self.generate_statements();
+    }
 
-        for obj in self.objects.iter() {
+    fn generate_statements(&self) {
+        for (_, obj) in self.sections.iter() {
+            let mut blob = CodeBlob::new();
+
             for stmt in obj.iter() {
-                if let AsmStmt::AsmInstruction(instr) = stmt {
-                    self.blob
-                        .gen_instruction(instr, |name| match self.symbols.find(name) {
+                // iterate over all sections and statements and actually generate
+                // code from the model. undefined symbols are reported for relocation.
+                match stmt {
+                    AsmStmt::AsmInstruction(instr) => {
+                        blob.gen_instruction(instr, |name| match self.symbols.find(name) {
                             Some(addr) => Some(addr),
                             None => {
                                 println!("todo relocate symbol {}", name);
                                 None
                             }
-                        });
+                        })
+                    }
+                    AsmStmt::Label(name) => blob.insert_label(name),
+                    _ => {}
                 }
             }
-        }
 
-        self.blob.dump();
+            blob.dump();
+        }
     }
 
     fn collect_symbols(&mut self) {
-        for obj in self.objects.iter() {
-            for stmt in *obj {
+        // fill the symbol table with all constant label assignments
+        // from any section so that the zeropage addr mode can be
+        // used if it's available for an instruction and the address
+        // fits into 8 bits.
+        for (_, obj) in self.sections.iter() {
+            for stmt in obj.iter() {
                 if let AsmStmt::ConstLabel(name, addr) = stmt {
                     self.symbols.insert(name, *addr);
                 }

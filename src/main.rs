@@ -7,12 +7,11 @@ fn main() {
     let filename = env::args().skip(1).next().unwrap();
     let source = fs::read_to_string(filename).unwrap();
 
-    let mut parser = AsmParser::new(&source);
-    parser.parse();
-
-    parser.dump_errors();
-
     let mut linker = Linker::new();
-    linker.add_obj(parser.statements());
-    linker.link();
+    let mut parser = AsmParser::new(&source);
+    parser.parse(&mut linker);
+
+    if parser.dump_errors() == 0 {
+        linker.link();
+    }
 }

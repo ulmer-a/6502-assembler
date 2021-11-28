@@ -1,4 +1,4 @@
-use crate::{asm::model::*, AsmParser};
+use crate::{AsmParser, asm::{model::*, parser::tests::StmtCollector}};
 
 #[test]
 fn parse_implied_and_immediate() {
@@ -12,11 +12,12 @@ fn parse_implied_and_immediate() {
         cmp #0xf0 ; rti
     "#,
     );
-    parser.parse();
+    let mut stmts = StmtCollector::new();
+    parser.parse(&mut stmts);
 
     assert_eq!(parser.errors().len(), 0);
     assert_eq!(
-        *parser.statements(),
+        *stmts.statements(),
         vec![
             AsmStmt::new_instr("brk".into(), AddrMode::Implied),
             AsmStmt::new_instr("inc".into(), AddrMode::Implied),
@@ -41,11 +42,12 @@ fn parse_direct_mem_refs() {
         stx 0x8000
     "#,
     );
-    parser.parse();
+    let mut stmts = StmtCollector::new();
+    parser.parse(&mut stmts);
 
     assert_eq!(parser.errors().len(), 0);
     assert_eq!(
-        *parser.statements(),
+        *stmts.statements(),
         vec![
             AsmStmt::new_instr(
                 "jsr".into(),
