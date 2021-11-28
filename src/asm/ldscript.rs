@@ -50,13 +50,6 @@ fn check_for_addr(next_token: Option<LdScriptToken>, slice: &str) -> Option<u16>
     }
 }
 
-pub fn default() -> Vec<LdSection> {
-    vec![LdSection {
-        name: "text".into(),
-        load_addr: Some(0xe000),
-    }]
-}
-
 #[cfg(test)]
 pub fn parse(source: &str) -> Result<Vec<LdSection>, String> {
     let mut lexer = LdScriptToken::lexer(source);

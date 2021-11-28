@@ -1,6 +1,6 @@
 mod codeblob;
 mod symtab;
-use std::collections::HashMap;
+use std::{collections::HashMap};
 
 use self::codeblob::CodeBlob;
 use super::{ldscript::LdSection, model::AsmStmt, parser::SectionSink};
@@ -40,7 +40,26 @@ impl Linker {
         self.generate_statements();
         self.resolve_all_symbols(&sections_to_link);
         self.relocate_blobs(&sections_to_link);
-        vec![]
+        
+        let mut binary: Vec<u8> = vec![];
+        let mut current_addr = sections_to_link[0].load_addr().unwrap();
+        for section in sections_to_link.iter() {
+            let load_addr = match section.load_addr() {
+                Some(addr) => {
+                    let padding = addr - current_addr;
+                    let mut padding = vec![0u8; padding as usize];
+                    binary.append(&mut padding);
+                    addr
+                },
+                None => current_addr,
+            };
+
+            let blob = self.blobs.get_mut(section.name()).unwrap();
+            let blob_size = blob.size();
+            blob.dump(&mut binary);
+            current_addr = load_addr + blob_size as u16;
+        }
+        binary
     }
 
     fn collect_symbols(&mut self) {

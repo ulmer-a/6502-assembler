@@ -24,7 +24,6 @@ impl SymbolTable {
     pub fn insert_table(&mut self, table: &SymbolTable, offset: u16) {
         for (name, addr) in table.symbols.iter() {
             self.symbols.insert(name.into(), addr + offset);
-            println!("name: {}, addr: {:04x}", name, addr + offset);
         }
     }
 

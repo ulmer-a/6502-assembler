@@ -28,6 +28,10 @@ impl CodeBlob {
         &self.symbols
     }
 
+    pub fn dump(&mut self, binary: &mut Vec<u8>) {
+        binary.append(&mut self.blob);
+    }
+
     pub fn resolve_symbols(&mut self, global_symbols: &SymbolTable) {
         for (name, offset) in self.rel16.iter() {
             match global_symbols.find(name) {
@@ -101,7 +105,13 @@ impl CodeBlob {
             AddrMode::Memory(mode, mem_ref) => {
                 let addr = match mem_ref {
                     MemRef::Addr(addr) => Some(addr),
-                    MemRef::Variable(name) => lookup(&name),
+                    MemRef::Variable(name) => {
+                        let addr = lookup(&name);
+                        if addr.is_none() {
+                            self.rel16.insert(name, (self.blob.len() + 1) as u16);
+                        }
+                        addr
+                    },
                 };
 
                 if addr.is_some() && addr.unwrap() < 256 {

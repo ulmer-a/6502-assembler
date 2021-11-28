@@ -1,4 +1,4 @@
-use std::{env, fs};
+use std::{env, fs, io::Write};
 mod asm;
 mod errors;
 use asm::{AsmParser, Linker};
@@ -18,6 +18,8 @@ fn main() {
             LdSection::new("text", Some(0xe000)),
             LdSection::new("data", None),
         ];
-        linker.link(ldscript);
+        let binary = linker.link(ldscript);
+        let mut file = fs::File::create("output.bin").unwrap();
+        file.write(&binary).unwrap();
     }
 }
