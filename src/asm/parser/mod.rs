@@ -8,7 +8,7 @@ use super::{
     lexer::{AsmLexer, AsmToken},
     model::AsmStmt,
 };
-use crate::errors::CompileError;
+use crate::{asm::model::DataPlacement, errors::CompileError};
 use errors::AsmParseError;
 
 pub struct AsmParser<'a> {
@@ -85,6 +85,17 @@ impl<'a> AsmParser<'a> {
                         self.error(AsmParseError::UnexpectedToken(token))
                     }
                 }
+                AsmToken::StrKeyword => {
+                    let token = self.lexer.next_token();
+                    if token == AsmToken::StringLiteral {
+                        let str_value = self.lexer.slice();
+                        self.statements.push(AsmStmt::Data(DataPlacement::Str(
+                            (&str_value[1..str_value.len() - 1]).into()
+                        )));
+                    } else {
+                        self.error(AsmParseError::UnexpectedToken(token))
+                    }
+                },
                 AsmToken::End => break,
                 AsmToken::Newline | AsmToken::Semicolon => {}
                 token => {

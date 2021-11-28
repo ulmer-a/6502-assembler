@@ -76,6 +76,7 @@ impl Linker {
                             }
                         })
                     }
+                    AsmStmt::Data(data) => blob.gen_data(data),
                     AsmStmt::Label(name) => blob.insert_label(name),
                     _ => {}
                 }

@@ -1,5 +1,5 @@
 use super::{opcode_table::OPCODE_TABLE, symtab::SymbolTable};
-use crate::asm::model::{AddrMode, IndexMode, Instruction, MemRef};
+use crate::asm::model::{AddrMode, DataPlacement, IndexMode, Instruction, MemRef};
 
 pub struct CodeBlob {
     blob: Vec<u8>,
@@ -22,6 +22,16 @@ impl CodeBlob {
         let current_addr = self.blob.len();
         assert!(current_addr <= 0xffff);
         self.symbols.insert(name, current_addr as u16);
+    }
+
+    pub fn gen_data(&mut self, data: &DataPlacement) {
+        match data {
+            DataPlacement::Str(string) => {
+                let mut bytes = string.clone().into_bytes();
+                bytes.push(0x00);
+                self.blob.append(&mut bytes);
+            }
+        }
     }
 
     pub fn gen_instruction<F>(&mut self, instruction: &Instruction, lookup: F)

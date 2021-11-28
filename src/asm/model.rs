@@ -4,6 +4,7 @@ use strum::EnumString;
 #[derive(Debug, PartialEq)]
 pub enum AsmStmt {
     AsmInstruction(Instruction),
+    Data(DataPlacement),
     Label(String),
     ConstLabel(String, u16),
 }
@@ -23,6 +24,11 @@ impl AsmStmt {
     pub fn new_const_label(name: String, addr: u16) -> AsmStmt {
         AsmStmt::ConstLabel(name, addr)
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum DataPlacement {
+    Str(String),
 }
 
 #[derive(Debug, PartialEq)]
