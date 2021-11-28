@@ -1,4 +1,8 @@
-use crate::asm::{AsmParser, model::{AddrMode, AsmStmt, IndexMode, MemRef}, parser::tests::StmtCollector};
+use crate::asm::{
+    model::{AddrMode, AsmStmt, IndexMode, MemRef},
+    parser::tests::StmtCollector,
+    AsmParser,
+};
 
 #[test]
 fn simple_labels() {

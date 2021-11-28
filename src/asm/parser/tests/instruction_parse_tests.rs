@@ -1,4 +1,7 @@
-use crate::{AsmParser, asm::{model::*, parser::tests::StmtCollector}};
+use crate::{
+    asm::{model::*, parser::tests::StmtCollector},
+    AsmParser,
+};
 
 #[test]
 fn parse_implied_and_immediate() {

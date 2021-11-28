@@ -33,6 +33,9 @@ pub enum AsmToken {
     #[regex(r"[_a-zA-Z][_a-zA-Z0-9]*")]
     Identifier,
 
+    #[token("section")]
+    SectionKeyword,
+
     #[token("\n")]
     Newline,
 

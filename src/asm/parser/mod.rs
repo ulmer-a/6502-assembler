@@ -73,6 +73,18 @@ impl<'a> AsmParser<'a> {
                         _ => self.parse_instruction(identifier),
                     }
                 }
+                AsmToken::SectionKeyword => {
+                    let token = self.lexer.next_token();
+                    if token == AsmToken::Identifier {
+                        sink.push_section(
+                            &self.current_section_name,
+                            std::mem::replace(&mut self.statements, vec![]),
+                        );
+                        self.current_section_name = self.lexer.slice().into();
+                    } else {
+                        self.error(AsmParseError::UnexpectedToken(token))
+                    }
+                }
                 AsmToken::End => break,
                 AsmToken::Newline | AsmToken::Semicolon => {}
                 token => {
