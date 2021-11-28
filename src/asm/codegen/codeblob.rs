@@ -14,8 +14,8 @@ impl CodeBlob {
         }
     }
 
-    pub fn dump(&self) {
-        println!("{:02x?}", self.blob);
+    pub fn size(&self) -> usize {
+        self.blob.len()
     }
 
     pub fn insert_label(&mut self, name: &str) {

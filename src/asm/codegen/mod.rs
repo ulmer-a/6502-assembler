@@ -3,7 +3,7 @@ mod symtab;
 use std::collections::HashMap;
 
 use self::codeblob::CodeBlob;
-use super::{model::AsmStmt, parser::SectionSink};
+use super::{ldscript::LdSection, model::AsmStmt, parser::SectionSink};
 use symtab::SymbolTable;
 
 #[rustfmt::skip]
@@ -11,6 +11,7 @@ mod opcode_table;
 
 pub struct Linker {
     sections: HashMap<String, Vec<AsmStmt>>,
+    blobs: HashMap<String, CodeBlob>,
     symbols: SymbolTable,
 }
 
@@ -29,17 +30,37 @@ impl Linker {
     pub fn new() -> Linker {
         Linker {
             sections: HashMap::new(),
+            blobs: HashMap::new(),
             symbols: SymbolTable::new(),
         }
     }
 
-    pub fn link(&mut self) {
+    pub fn link(&mut self, sections_to_link: Vec<LdSection>) -> Vec<u8> {
         self.collect_symbols();
         self.generate_statements();
+        
+        let load_addr = self.calc_load_addr(sections_to_link.iter());
+        println!("load_addr: 0x{:x}", load_addr);
+        vec![]
     }
 
-    fn generate_statements(&self) {
-        for (_, obj) in self.sections.iter() {
+    fn calc_load_addr(&self, sections_to_link: std::slice::Iter<LdSection>) -> u16 {
+        let mut sections_to_link = sections_to_link;
+        let current_section = match sections_to_link.next() {
+            Some(section) => section,
+            None => return 0x0000
+        };        
+        match current_section.load_addr() {
+            Some(addr) => addr,
+            None => {
+                let next_addr = self.calc_load_addr(sections_to_link);
+                next_addr + self.blobs.get(current_section.name()).unwrap().size() as u16
+            }
+        }
+    }
+
+    fn generate_statements(&mut self) {
+        for (name, obj) in self.sections.iter() {
             let mut blob = CodeBlob::new();
 
             for stmt in obj.iter() {
@@ -60,7 +81,7 @@ impl Linker {
                 }
             }
 
-            blob.dump();
+            self.blobs.insert(name.into(), blob);
         }
     }
 

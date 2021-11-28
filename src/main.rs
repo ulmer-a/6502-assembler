@@ -12,6 +12,7 @@ fn main() {
     parser.parse(&mut linker);
 
     if parser.dump_errors() == 0 {
-        linker.link();
+        let ldscript = asm::ldscript::default();
+        linker.link(ldscript);
     }
 }

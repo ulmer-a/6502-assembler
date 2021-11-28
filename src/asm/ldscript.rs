@@ -23,6 +23,16 @@ pub struct LdSection {
     load_addr: Option<u16>,
 }
 
+impl LdSection {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn load_addr(&self) -> Option<u16> {
+        self.load_addr
+    }
+}
+
 #[cfg(test)]
 fn check_for_addr(next_token: Option<LdScriptToken>, slice: &str) -> Option<u16> {
     if next_token? == LdScriptToken::Address {
@@ -31,6 +41,13 @@ fn check_for_addr(next_token: Option<LdScriptToken>, slice: &str) -> Option<u16>
     } else {
         None
     }
+}
+
+pub fn default() -> Vec<LdSection> {
+    vec![ LdSection {
+        name: "text".into(),
+        load_addr: Some(0xe000)
+    } ]
 }
 
 #[cfg(test)]
