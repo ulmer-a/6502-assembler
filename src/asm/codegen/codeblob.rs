@@ -32,7 +32,7 @@ impl CodeBlob {
         binary.append(&mut self.blob);
     }
 
-    pub fn resolve_symbols(&mut self, global_symbols: &SymbolTable) {
+    pub fn resolve_symbols(&mut self, base_addr: u16, global_symbols: &SymbolTable) {
         for (name, offset) in self.rel16.iter() {
             match global_symbols.find(name) {
                 Some(addr) => {
@@ -46,18 +46,12 @@ impl CodeBlob {
             }
         }
         for (name, offset) in self.rel8.iter() {
-            match global_symbols.find(name) {
-                Some(addr) => {
-                    if addr >= 256 {
-                        println!("relocation doesnt fit! {} = {:02x}", name, addr);
-                        continue;
-                    }
-                    self.blob[*offset as usize] = addr as u8;
-                }
-                None => {
-                    println!("undefined reference to symbol {}", name);
-                    continue;
-                }
+            if let Some(addr) = global_symbols.find(name) {
+                let delta = (addr as i16 - (base_addr + offset) as i16) as i8;
+                self.blob[*offset as usize] = delta as u8;
+            } else {
+                println!("undefined reference to symbol {}", name);
+                continue;
             }
         }
     }
@@ -108,7 +102,12 @@ impl CodeBlob {
                     MemRef::Variable(name) => {
                         let addr = lookup(&name);
                         if addr.is_none() {
-                            self.rel16.insert(name, (self.blob.len() + 1) as u16);
+                            let rel_addr = (self.blob.len() + 1) as u16;
+                            if instruction.has_rel_addressing() {
+                                self.rel8.insert(name, rel_addr);
+                            } else {
+                                self.rel16.insert(name, rel_addr);
+                            }
                         }
                         addr
                     }

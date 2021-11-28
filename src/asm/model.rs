@@ -1,3 +1,4 @@
+use super::codegen::get_opcode;
 use std::str::FromStr;
 use strum::EnumString;
 
@@ -178,5 +179,9 @@ impl Instruction {
 
     pub fn mnemonic_index(&self) -> usize {
         self.mnemonic as usize
+    }
+
+    pub fn has_rel_addressing(&self) -> bool {
+        get_opcode(self.mnemonic_index(), 13).is_some()
     }
 }

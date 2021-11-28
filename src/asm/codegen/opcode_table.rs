@@ -1,7 +1,11 @@
 
 pub fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
     match OPCODE_TABLE[mnemonic_i][addr_mode_i] {
-        -1 => get_opcode(mnemonic_i, 13),
+        -1 => if addr_mode_i != 13 {
+            get_opcode(mnemonic_i, 13)
+        } else {
+            None
+        },
         opcode => Some(opcode as u8),
     }
 }

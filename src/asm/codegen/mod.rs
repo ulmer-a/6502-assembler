@@ -8,6 +8,7 @@ use symtab::SymbolTable;
 
 #[rustfmt::skip]
 mod opcode_table;
+pub use opcode_table::get_opcode;
 
 pub struct Linker {
     sections: HashMap<String, Vec<AsmStmt>>,
@@ -106,12 +107,19 @@ impl Linker {
     }
 
     fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) {
+        let mut current_addr = link_sections[0].load_addr().unwrap();
         for section in link_sections.iter() {
+            let load_addr = match section.load_addr() {
+                Some(addr) => addr,
+                None => current_addr,
+            };
+
             // resolve symbols: go over the binary blobs again and fill in the
             // placeholders with the actual addresses that have accumulated
             // in the symbol table by now.
             let blob = self.blobs.get_mut(section.name()).unwrap();
-            blob.resolve_symbols(&self.symbols);
+            blob.resolve_symbols(load_addr, &self.symbols);
+            current_addr = load_addr + blob.size() as u16;
         }
     }
 }
