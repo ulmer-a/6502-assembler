@@ -14,7 +14,7 @@ struct StmtCollector {
 impl StmtCollector {
     pub fn new() -> StmtCollector {
         StmtCollector {
-            stmts: HashMap::new()
+            stmts: HashMap::new(),
         }
     }
 

@@ -90,12 +90,12 @@ impl<'a> AsmParser<'a> {
                     if token == AsmToken::StringLiteral {
                         let str_value = self.lexer.slice();
                         self.statements.push(AsmStmt::Data(DataPlacement::Str(
-                            (&str_value[1..str_value.len() - 1]).into()
+                            (&str_value[1..str_value.len() - 1]).into(),
                         )));
                     } else {
                         self.error(AsmParseError::UnexpectedToken(token))
                     }
-                },
+                }
                 AsmToken::End => break,
                 AsmToken::Newline | AsmToken::Semicolon => {}
                 token => {

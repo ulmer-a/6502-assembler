@@ -30,8 +30,6 @@ fn simple_sections() {
     );
     assert_eq!(
         *stmts.section_statements("other_section"),
-        vec![
-            AsmStmt::new_instr("cli".into(), AddrMode::Implied),
-        ]
+        vec![AsmStmt::new_instr("cli".into(), AddrMode::Implied),]
     );
 }

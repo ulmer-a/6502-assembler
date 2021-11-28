@@ -38,7 +38,7 @@ pub enum AsmToken {
 
     #[token("section")]
     SectionKeyword,
-    
+
     #[token(".str")]
     StrKeyword,
 

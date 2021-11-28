@@ -17,7 +17,7 @@ impl CodeBlob {
     pub fn size(&self) -> usize {
         self.blob.len()
     }
-    
+
     pub fn gen_stmt<F>(&mut self, stmt: &AsmStmt, symbol_lookup: F)
     where
         F: Fn(&str) -> Option<u16>,

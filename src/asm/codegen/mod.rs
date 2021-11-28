@@ -38,7 +38,7 @@ impl Linker {
     pub fn link(&mut self, sections_to_link: Vec<LdSection>) -> Vec<u8> {
         self.collect_symbols();
         self.generate_statements();
-        
+
         let load_addr = self.calc_load_addr(sections_to_link.iter());
         println!("load_addr: 0x{:x}", load_addr);
         vec![]
@@ -48,8 +48,8 @@ impl Linker {
         let mut sections_to_link = sections_to_link;
         let current_section = match sections_to_link.next() {
             Some(section) => section,
-            None => return 0x0000
-        };        
+            None => return 0x0000,
+        };
         match current_section.load_addr() {
             Some(addr) => addr,
             None => {
@@ -80,12 +80,11 @@ impl Linker {
             // iterate over all sections and statements and actually generate
             // code from the model. undefined symbols are reported for relocation.
             for stmt in stmts.iter() {
-                blob.gen_stmt(stmt, |name| match self.symbols.find(name) {
-                    Some(addr) => Some(addr),
-                    None => {
+                blob.gen_stmt(stmt, |name| {
+                    self.symbols.find(name).or_else(|| {
                         println!("todo relocate symbol {}", name);
                         None
-                    }
+                    })
                 });
             }
 
