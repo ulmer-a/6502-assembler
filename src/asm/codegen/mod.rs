@@ -39,6 +39,7 @@ impl Linker {
         self.collect_symbols();
         self.generate_statements();
         self.resolve_all_symbols(&sections_to_link);
+        self.relocate_blobs(&sections_to_link);
         vec![]
     }
 
@@ -64,10 +65,7 @@ impl Linker {
             // code from the model. undefined symbols are reported for relocation.
             for stmt in stmts.iter() {
                 blob.gen_stmt(stmt, |name| {
-                    self.symbols.find(name).or_else(|| {
-                        println!("todo relocate symbol {}", name);
-                        None
-                    })
+                    self.symbols.find(name)
                 });
             }
 
@@ -86,6 +84,13 @@ impl Linker {
             let blob = self.blobs.get_mut(section.name()).unwrap();
             self.symbols.insert_table(blob.symbols(), load_addr);
             current_addr = load_addr + blob.size() as u16;
+        }
+    }
+
+    fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) {
+        for section in link_sections.iter() {
+            let blob = self.blobs.get_mut(section.name()).unwrap();
+            blob.resolve_symbols(&self.symbols);
         }
     }
 }

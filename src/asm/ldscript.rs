@@ -24,6 +24,13 @@ pub struct LdSection {
 }
 
 impl LdSection {
+    pub fn new(name: &str, load_addr: Option<u16>) -> LdSection {
+        LdSection {
+            name: name.into(),
+            load_addr
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

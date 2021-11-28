@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use super::{opcode_table::OPCODE_TABLE, symtab::SymbolTable};
 use crate::asm::model::{AddrMode, AsmStmt, DataPlacement, IndexMode, Instruction, MemRef};
 
 pub struct CodeBlob {
     blob: Vec<u8>,
     symbols: SymbolTable,
+    rel8: HashMap<String, u16>,
+    rel16: HashMap<String, u16>,
 }
 
 impl CodeBlob {
@@ -11,6 +15,8 @@ impl CodeBlob {
         CodeBlob {
             blob: vec![],
             symbols: SymbolTable::new(),
+            rel8: HashMap::new(),
+            rel16: HashMap::new(),
         }
     }
 
@@ -20,6 +26,36 @@ impl CodeBlob {
 
     pub fn symbols(&self) -> &SymbolTable {
         &self.symbols
+    }
+
+    pub fn resolve_symbols(&mut self, global_symbols: &SymbolTable) {
+        for (name, offset) in self.rel16.iter() {
+            match global_symbols.find(name) {
+                Some(addr) => {
+                    self.blob[*offset as usize] = (addr & 0xff) as u8;
+                    self.blob[*offset as usize + 1] = (addr >> 8) as u8;
+                },
+                None => {
+                    println!("undefined reference to symbol {}", name);
+                    continue;
+                }
+            }
+        }
+        for (name, offset) in self.rel8.iter() {
+            match global_symbols.find(name) {
+                Some(addr) => {
+                    if addr >= 256 {
+                        println!("relocation doesnt fit! {} = {:02x}", name, addr);
+                        continue;
+                    }
+                    self.blob[*offset as usize] = addr as u8;
+                },
+                None => {
+                    println!("undefined reference to symbol {}", name);
+                    continue;
+                }
+            }
+        }
     }
 
     pub fn gen_stmt<F>(&mut self, stmt: &AsmStmt, symbol_lookup: F)
