@@ -1,5 +1,5 @@
 use super::{opcode_table::OPCODE_TABLE, symtab::SymbolTable};
-use crate::asm::model::{AddrMode, DataPlacement, IndexMode, Instruction, MemRef};
+use crate::asm::model::{AddrMode, AsmStmt, DataPlacement, IndexMode, Instruction, MemRef};
 
 pub struct CodeBlob {
     blob: Vec<u8>,
@@ -16,6 +16,18 @@ impl CodeBlob {
 
     pub fn size(&self) -> usize {
         self.blob.len()
+    }
+    
+    pub fn gen_stmt<F>(&mut self, stmt: &AsmStmt, symbol_lookup: F)
+    where
+        F: Fn(&str) -> Option<u16>,
+    {
+        match stmt {
+            AsmStmt::AsmInstruction(instr) => self.gen_instruction(instr, symbol_lookup),
+            AsmStmt::Data(data) => self.gen_data(data),
+            AsmStmt::Label(name) => self.insert_label(name),
+            _ => {}
+        }
     }
 
     pub fn insert_label(&mut self, name: &str) {

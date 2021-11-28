@@ -59,33 +59,6 @@ impl Linker {
         }
     }
 
-    fn generate_statements(&mut self) {
-        for (name, obj) in self.sections.iter() {
-            let mut blob = CodeBlob::new();
-
-            for stmt in obj.iter() {
-                // iterate over all sections and statements and actually generate
-                // code from the model. undefined symbols are reported for relocation.
-                match stmt {
-                    AsmStmt::AsmInstruction(instr) => {
-                        blob.gen_instruction(instr, |name| match self.symbols.find(name) {
-                            Some(addr) => Some(addr),
-                            None => {
-                                println!("todo relocate symbol {}", name);
-                                None
-                            }
-                        })
-                    }
-                    AsmStmt::Data(data) => blob.gen_data(data),
-                    AsmStmt::Label(name) => blob.insert_label(name),
-                    _ => {}
-                }
-            }
-
-            self.blobs.insert(name.into(), blob);
-        }
-    }
-
     fn collect_symbols(&mut self) {
         // fill the symbol table with all constant label assignments
         // from any section so that the zeropage addr mode can be
@@ -97,6 +70,26 @@ impl Linker {
                     self.symbols.insert(name, *addr);
                 }
             }
+        }
+    }
+
+    fn generate_statements(&mut self) {
+        for (section_name, stmts) in self.sections.iter() {
+            let mut blob = CodeBlob::new();
+
+            // iterate over all sections and statements and actually generate
+            // code from the model. undefined symbols are reported for relocation.
+            for stmt in stmts.iter() {
+                blob.gen_stmt(stmt, |name| match self.symbols.find(name) {
+                    Some(addr) => Some(addr),
+                    None => {
+                        println!("todo relocate symbol {}", name);
+                        None
+                    }
+                });
+            }
+
+            self.blobs.insert(section_name.into(), blob);
         }
     }
 }
