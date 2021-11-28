@@ -6,8 +6,12 @@ pub struct SymbolTable {
 
 impl SymbolTable {
     pub fn new() -> SymbolTable {
+        let mut symbols = HashMap::new();
+        for i in 0..32 {
+            symbols.insert(format!("r{}", i), i);
+        }
         SymbolTable {
-            symbols: HashMap::new(),
+            symbols,
         }
     }
 

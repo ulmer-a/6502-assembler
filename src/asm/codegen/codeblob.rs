@@ -10,9 +10,13 @@ impl CodeBlob {
         CodeBlob { blob: vec![] }
     }
 
+    pub fn dump(&self) {
+        println!("{:02x?}", self.blob);
+    }
+
     pub fn gen_instruction<F>(&mut self, instruction: &Instruction, lookup: F)
     where
-        F: Fn(&str) -> u16,
+        F: Fn(&str) -> Option<u16>,
     {
         fn addr_to_vector(addr: u16) -> Vec<u8> {
             vec![(addr >> 8) as u8, (addr & 0xff) as u8]
@@ -24,11 +28,12 @@ impl CodeBlob {
             AddrMode::Immediate(addr) => (1, vec![addr]),
             AddrMode::Memory(mode, mem_ref) => {
                 let addr = match mem_ref {
-                    MemRef::Addr(addr) => addr,
+                    MemRef::Addr(addr) => Some(addr),
                     MemRef::Variable(name) => lookup(&name),
                 };
 
-                if addr < 256 {
+                if addr.is_some() && addr.unwrap() < 256 {
+                    let addr = addr.unwrap();
                     match mode {
                         IndexMode::None => (2, vec![addr as u8]),
                         IndexMode::IndexedX => (3, vec![addr as u8]),
@@ -36,9 +41,9 @@ impl CodeBlob {
                     }
                 } else {
                     match mode {
-                        IndexMode::None => (8, addr_to_vector(addr)),
-                        IndexMode::IndexedX => (9, addr_to_vector(addr)),
-                        IndexMode::IndexedY => (10, addr_to_vector(addr)),
+                        IndexMode::None => (8, addr_to_vector(0)),
+                        IndexMode::IndexedX => (9, addr_to_vector(0)),
+                        IndexMode::IndexedY => (10, addr_to_vector(0)),
                     }
                 }
             }

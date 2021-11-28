@@ -34,15 +34,17 @@ impl<'a> Linker<'a> {
                 if let AsmStmt::AsmInstruction(instr) = stmt {
                     self.blob
                         .gen_instruction(instr, |name| match self.symbols.find(name) {
-                            Some(addr) => addr,
+                            Some(addr) => Some(addr),
                             None => {
                                 println!("todo relocate symbol {}", name);
-                                0x0000
+                                None
                             }
                         });
                 }
             }
         }
+
+        self.blob.dump();
     }
 
     fn collect_symbols(&mut self) {
