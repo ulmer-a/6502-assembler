@@ -38,3 +38,30 @@ impl SymbolTable {
         }
     }
 }
+
+#[test]
+fn symtab_simple() {
+    let mut symbols = SymbolTable::new();
+    symbols.insert("my_func", 0x8abc);
+    assert_eq!(symbols.find("my_func"), Some(0x8abc));
+}
+
+#[test]
+fn symtab_merge() {
+    let mut symbols1 = SymbolTable::new();
+    symbols1.insert("my_func", 0x8abc);
+
+    let mut symbols2 = SymbolTable::new();
+    symbols2.insert_table(&symbols1, 0xcde);
+
+    assert_eq!(symbols2.find("my_func"), Some(0x8abc + 0xcde));
+}
+
+#[test]
+fn symtab_pseudo_registers() {
+    let symbols1 = SymbolTable::new();
+    let symbols2 = SymbolTable::new_with_registers();
+
+    assert_eq!(symbols1.find("r14"), None);
+    assert_eq!(symbols2.find("r14"), Some(14));
+}
