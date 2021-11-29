@@ -4,5 +4,5 @@ mod lexer;
 mod model;
 mod parser;
 
-pub use codegen::Linker;
+pub use codegen::CodeGenerator;
 pub use parser::AsmParser;

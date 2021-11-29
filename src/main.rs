@@ -1,7 +1,7 @@
 use std::{env, fs, io::Write};
 mod asm;
 mod errors;
-use asm::{AsmParser, Linker};
+use asm::{AsmParser, CodeGenerator};
 
 use crate::asm::ldscript::LdSection;
 
@@ -9,7 +9,7 @@ fn main() {
     let filename = env::args().skip(1).next().unwrap();
     let source = fs::read_to_string(filename).unwrap();
 
-    let mut linker = Linker::new();
+    let mut linker = CodeGenerator::new();
     let mut parser = AsmParser::new(&source);
     parser.parse(&mut linker);
 

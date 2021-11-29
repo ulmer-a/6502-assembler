@@ -14,6 +14,7 @@ impl SymbolTable {
     pub fn new_with_registers() -> SymbolTable {
         let mut table = SymbolTable::new();
         for i in 0..32 {
+            // insert pseudo register symbols r0..r31
             table.insert(&format!("r{}", i), i);
         }
         table
@@ -24,6 +25,7 @@ impl SymbolTable {
     }
 
     pub fn insert_table(&mut self, table: &SymbolTable, offset: u16) {
+        // merge with another symbol table object
         for (name, addr) in table.symbols.iter() {
             self.symbols.insert(name.into(), addr + offset);
         }

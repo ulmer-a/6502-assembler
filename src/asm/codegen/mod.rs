@@ -10,13 +10,13 @@ use symtab::SymbolTable;
 mod opcode_table;
 pub use opcode_table::get_opcode;
 
-pub struct Linker {
+pub struct CodeGenerator {
     sections: HashMap<String, Vec<AsmStmt>>,
     blobs: HashMap<String, CodeBlob>,
     symbols: SymbolTable,
 }
 
-impl SectionSink for Linker {
+impl SectionSink for CodeGenerator {
     fn push_section(&mut self, name: &str, stmts: Vec<AsmStmt>) {
         let mut stmts = stmts;
         if let Some(section_stmts) = self.sections.get_mut(name) {
@@ -27,9 +27,9 @@ impl SectionSink for Linker {
     }
 }
 
-impl Linker {
-    pub fn new() -> Linker {
-        Linker {
+impl CodeGenerator {
+    pub fn new() -> CodeGenerator {
+        CodeGenerator {
             sections: HashMap::new(),
             blobs: HashMap::new(),
             symbols: SymbolTable::new_with_registers(),
