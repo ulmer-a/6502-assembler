@@ -105,7 +105,7 @@ impl CodeGenerator {
 
     fn iterate_section_blobs<F>(&mut self, link_sections: &Vec<LdSection>, f: F)
     where
-        F: Fn(&mut SymbolTable, u16, &mut CodeBlob)
+        F: Fn(&mut SymbolTable, u16, &mut CodeBlob),
     {
         let mut current_addr = link_sections[0].load_addr().unwrap();
         for section in link_sections.iter() {

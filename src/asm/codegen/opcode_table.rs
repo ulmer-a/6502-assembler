@@ -1,4 +1,5 @@
 
+
 pub fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
     match OPCODE_TABLE[mnemonic_i][addr_mode_i] {
         -1 => if addr_mode_i != 13 {
@@ -7,6 +8,25 @@ pub fn get_opcode(mnemonic_i: usize, addr_mode_i: usize) -> Option<u8> {
             None
         },
         opcode => Some(opcode as u8),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::asm::model::{AddrMode, IndexMode, Instruction, MemRef};
+
+    #[test]
+    fn get_rel_opcode() {
+        let i = Instruction::new("beq".into(),
+        AddrMode::Memory(IndexMode::None, MemRef::Variable("test".into())));
+        assert_eq!(super::get_opcode(i.mnemonic_index(), 2).unwrap(), 0xf0);
+    }
+
+    #[test]
+    fn get_lda_opcode() {
+        let i = Instruction::new("lda".into(),
+            AddrMode::Memory(IndexMode::IndexedX, MemRef::Addr(0x1234)));
+        assert_eq!(super::get_opcode(i.mnemonic_index(), 9).unwrap(), 0xbd);
     }
 }
 
