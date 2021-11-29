@@ -91,22 +91,22 @@ impl CodeGenerator {
     }
 
     fn resolve_all_symbols(&mut self, link_sections: &Vec<LdSection>) {
-        let mut current_addr = link_sections[0].load_addr().unwrap();
-        for section in link_sections.iter() {
-            let load_addr = match section.load_addr() {
-                Some(addr) => addr,
-                None => current_addr,
-            };
-
-            let blob = self.blobs.get_mut(section.name()).unwrap();
-            self.symbols.insert_table(blob.symbols(), load_addr);
-            current_addr = load_addr + blob.size() as u16;
-        }
-
+        self.iterate_section_blobs(link_sections, |symbols, section_base, blob| {
+            symbols.insert_table(blob.symbols(), section_base);
+        });
         self.relocate_blobs(link_sections);
     }
 
     fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) {
+        self.iterate_section_blobs(link_sections, |symbols, section_base, blob| {
+            blob.resolve_symbols(section_base, symbols);
+        });
+    }
+
+    fn iterate_section_blobs<F>(&mut self, link_sections: &Vec<LdSection>, f: F)
+    where
+        F: Fn(&mut SymbolTable, u16, &mut CodeBlob)
+    {
         let mut current_addr = link_sections[0].load_addr().unwrap();
         for section in link_sections.iter() {
             let load_addr = match section.load_addr() {
@@ -118,7 +118,7 @@ impl CodeGenerator {
             // placeholders with the actual addresses that have accumulated
             // in the symbol table by now.
             let blob = self.blobs.get_mut(section.name()).unwrap();
-            blob.resolve_symbols(load_addr, &self.symbols);
+            f(&mut self.symbols, load_addr, blob);
             current_addr = load_addr + blob.size() as u16;
         }
     }
