@@ -51,7 +51,7 @@ impl CodeBlob {
             if let Some(addr) = global_symbols.find(name) {
                 // if the symbol exists, calculate the relative address
                 let delta = addr as i16 - (base_addr + offset + 1) as i16;
-                if delta > u8::MAX as i16 || delta < u8::MIN as i16 {
+                if delta > i8::MAX as i16 || delta < i8::MIN as i16 {
                     errors.push(format!("cannot always branch to symbol {}, distance too far", name));
                 }
                 self.blob[*offset as usize] = delta as u8;
@@ -95,10 +95,10 @@ impl CodeBlob {
         }
     }
 
-    fn vec_from_mem_ref(&mut self, mem_ref: &MemRef, zp: bool) -> Vec<u8> {
+    fn vec_from_mem_ref(&mut self, mem_ref: &MemRef, allow_zp: bool) -> Vec<u8> {
         match mem_ref {
             MemRef::Addr(addr) => {
-                if zp {
+                if allow_zp {
                     vec! [ *addr as u8 ]
                 } else {
                     addr.to_le_bytes().to_vec()
