@@ -54,10 +54,11 @@ impl CodeGenerator {
                 None => current_addr,
             };
 
-            let blob = self.blobs.get_mut(section.name()).unwrap();
-            let blob_size = blob.size();
-            blob.dump(&mut binary);
-            current_addr = load_addr + blob_size as u16;
+            if let Some(blob) = self.blobs.get_mut(section.name()) {
+                let blob_size = blob.size();
+                blob.dump(&mut binary);
+                current_addr = load_addr + blob_size as u16;
+            }
         }
         binary
     }
@@ -117,9 +118,10 @@ impl CodeGenerator {
             // resolve symbols: go over the binary blobs again and fill in the
             // placeholders with the actual addresses that have accumulated
             // in the symbol table by now.
-            let blob = self.blobs.get_mut(section.name()).unwrap();
-            f(&mut self.symbols, load_addr, blob);
-            current_addr = load_addr + blob.size() as u16;
+            if let Some(blob) = self.blobs.get_mut(section.name()) {
+                f(&mut self.symbols, load_addr, blob);
+                current_addr = load_addr + blob.size() as u16;
+            }
         }
     }
 }
