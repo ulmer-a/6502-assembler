@@ -51,7 +51,7 @@ impl<'a> AsmParser<'a> {
         }
     }
 
-    fn parse_mem_ref(&mut self) -> Option<MemRef> {
+    pub fn parse_mem_ref(&mut self) -> Option<MemRef> {
         let token = self.lexer.current_token();
         match token {
             AsmToken::DecInteger | AsmToken::HexInteger => {

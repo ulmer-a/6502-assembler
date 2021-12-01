@@ -30,6 +30,7 @@ impl AsmStmt {
 #[derive(Debug, PartialEq)]
 pub enum DataPlacement {
     Str(String),
+    Word(MemRef),
 }
 
 #[derive(Debug, PartialEq)]

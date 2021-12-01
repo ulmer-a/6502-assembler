@@ -95,7 +95,15 @@ impl<'a> AsmParser<'a> {
                     } else {
                         self.error(AsmParseError::UnexpectedToken(token))
                     }
-                }
+                },
+                AsmToken::WordKeyword => {
+                    self.lexer.next_token();
+                    if let Some(mem_ref) = self.parse_mem_ref() {
+                        self.statements.push(AsmStmt::Data(DataPlacement::Word(
+                            mem_ref
+                        )));
+                    }
+                },
                 AsmToken::End => break,
                 AsmToken::Newline | AsmToken::Semicolon => {}
                 token => {

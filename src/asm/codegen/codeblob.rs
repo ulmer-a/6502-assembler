@@ -10,6 +10,7 @@ pub struct CodeBlob {
     rel16: HashMap<String, u16>,
 }
 
+
 impl CodeBlob {
     pub fn new() -> CodeBlob {
         CodeBlob {
@@ -80,6 +81,26 @@ impl CodeBlob {
                 let mut bytes = string.clone().into_bytes();
                 bytes.push(0x00);
                 self.blob.append(&mut bytes);
+            },
+            DataPlacement::Word(mem_ref) => {
+                let mut data = self.vec_from_mem_ref(mem_ref, false);
+                self.blob.append(&mut data);
+            },
+        }
+    }
+
+    fn vec_from_mem_ref(&mut self, mem_ref: &MemRef, zp: bool) -> Vec<u8> {
+        match mem_ref {
+            MemRef::Addr(addr) => {
+                if zp {
+                    vec! [ *addr as u8 ]
+                } else {
+                    addr.to_le_bytes().to_vec()
+                }
+            },
+            MemRef::Variable(name) => {
+                self.rel16.insert(name.clone(), self.blob.len() as u16);
+                vec![ 0, 0 ]
             }
         }
     }
