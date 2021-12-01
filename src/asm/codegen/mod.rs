@@ -36,10 +36,10 @@ impl CodeGenerator {
         }
     }
 
-    pub fn link(&mut self, sections_to_link: Vec<LdSection>) -> Vec<u8> {
+    pub fn link(&mut self, sections_to_link: Vec<LdSection>) -> Result<Vec<u8>, Vec<String>> {
         self.collect_symbols();
         self.generate_statements();
-        self.resolve_all_symbols(&sections_to_link);
+        self.resolve_all_symbols(&sections_to_link)?;
 
         let mut binary: Vec<u8> = vec![];
         let mut current_addr = sections_to_link[0].load_addr().unwrap();
@@ -60,7 +60,7 @@ impl CodeGenerator {
                 current_addr = load_addr + blob_size as u16;
             }
         }
-        binary
+        Ok(binary)
     }
 
     fn collect_symbols(&mut self) {
@@ -91,23 +91,31 @@ impl CodeGenerator {
         }
     }
 
-    fn resolve_all_symbols(&mut self, link_sections: &Vec<LdSection>) {
+    fn resolve_all_symbols(&mut self, link_sections: &Vec<LdSection>) -> Result<(), Vec<String>> {
         self.iterate_section_blobs(link_sections, |symbols, section_base, blob| {
             symbols.insert_table(blob.symbols(), section_base);
+            vec![]
         });
-        self.relocate_blobs(link_sections);
+
+        let errors = self.relocate_blobs(link_sections);
+        if errors.len() > 0 {
+            Err(errors)
+        } else {
+            Ok(())
+        }
     }
 
-    fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) {
+    fn relocate_blobs(&mut self, link_sections: &Vec<LdSection>) -> Vec<String> {
         self.iterate_section_blobs(link_sections, |symbols, section_base, blob| {
-            blob.resolve_symbols(section_base, symbols);
-        });
+            blob.resolve_symbols(section_base, symbols)
+        })
     }
 
-    fn iterate_section_blobs<F>(&mut self, link_sections: &Vec<LdSection>, f: F)
+    fn iterate_section_blobs<F>(&mut self, link_sections: &Vec<LdSection>, f: F) -> Vec<String>
     where
-        F: Fn(&mut SymbolTable, u16, &mut CodeBlob),
+        F: Fn(&mut SymbolTable, u16, &mut CodeBlob) -> Vec<String>,
     {
+        let mut errors = vec![];
         let mut current_addr = link_sections[0].load_addr().unwrap();
         for section in link_sections.iter() {
             let load_addr = match section.load_addr() {
@@ -119,9 +127,11 @@ impl CodeGenerator {
             // placeholders with the actual addresses that have accumulated
             // in the symbol table by now.
             if let Some(blob) = self.blobs.get_mut(section.name()) {
-                f(&mut self.symbols, load_addr, blob);
+                errors.append(&mut f(&mut self.symbols, load_addr, blob));
                 current_addr = load_addr + blob.size() as u16;
             }
         }
+
+        errors
     }
 }

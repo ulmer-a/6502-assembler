@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 
 use super::{opcode_table::get_opcode, symtab::SymbolTable};
 use crate::asm::model::{AddrMode, AsmStmt, DataPlacement, IndexMode, Instruction, MemRef};
@@ -33,28 +33,34 @@ impl CodeBlob {
         binary.append(&mut self.blob);
     }
 
-    pub fn resolve_symbols(&mut self, base_addr: u16, global_symbols: &SymbolTable) {
+    pub fn resolve_symbols(&mut self, base_addr: u16, global_symbols: &SymbolTable) -> Vec<String> {
+        let mut errors = vec![];
+
         for (name, offset) in self.rel16.iter() {
-            match global_symbols.find(name) {
-                Some(addr) => {
-                    self.blob[*offset as usize] = (addr & 0xff) as u8;
-                    self.blob[*offset as usize + 1] = (addr >> 8) as u8;
-                }
-                None => {
-                    println!("undefined reference to symbol {}", name);
-                    continue;
-                }
+            if let Some(addr) = global_symbols.find(name) {
+                // if the symbol exists, fill in the address
+                let operand = addr.to_le_bytes().to_vec();
+                self.blob[*offset as usize] = operand[0];
+                self.blob[*offset as usize + 1] = operand[1];
+            } else {
+                errors.push(format!("undefined reference to symbol {}", name));
             }
         }
+
         for (name, offset) in self.rel8.iter() {
             if let Some(addr) = global_symbols.find(name) {
+                // if the symbol exists, calculate the relative address
                 let delta = addr as i16 - (base_addr + offset + 1) as i16;
+                if delta > u8::MAX as i16 || delta < u8::MIN as i16 {
+                    errors.push(format!("cannot always branch to symbol {}, distance too far", name));
+                }
                 self.blob[*offset as usize] = delta as u8;
             } else {
-                println!("undefined reference to symbol {}", name);
-                continue;
+                errors.push(format!("undefined reference to symbol {}", name));
             }
         }
+
+        errors
     }
 
     pub fn gen_stmt<F>(&mut self, stmt: &AsmStmt, symbol_lookup: F)
@@ -109,10 +115,6 @@ impl CodeBlob {
     where
         F: Fn(&str) -> Option<u16>,
     {
-        fn addr_to_vector(addr: u16) -> Vec<u8> {
-            vec![(addr >> 8) as u8, (addr & 0xff) as u8]
-        }
-
         let mnemonic_i = instruction.mnemonic_index();
         let (addr_mode_i, ref mut operand) = match instruction.addr_mode() {
             AddrMode::Implied => (0, vec![]),
@@ -146,9 +148,9 @@ impl CodeBlob {
                     }
                 } else {
                     match mode {
-                        IndexMode::None => (8, addr_to_vector(0)),
-                        IndexMode::IndexedX => (9, addr_to_vector(0)),
-                        IndexMode::IndexedY => (10, addr_to_vector(0)),
+                        IndexMode::None => (8, vec![ 0, 0 ]),
+                        IndexMode::IndexedX => (9, vec![ 0, 0 ]),
+                        IndexMode::IndexedY => (10, vec![ 0, 0 ]),
                     }
                 }
             }
